@@ -1,11 +1,11 @@
 ##### Final general workflow DESeq2  #### 
 
 ###### General workflow analysing RNA-seq data using DESeq2 ######
-setwd("E:/Nico/Final general workflow DESeq2 human")
+setwd("E:/Nico/Shiny App/MS project")
 
 ##### Install & load required packages ####
 ##### Installation
-source("General workflow DESeq2_functions_final human.R")
+source("General workflow DESeq2_functions.R")
 
 
 ##### Annotation file #####
@@ -14,41 +14,46 @@ source("General workflow DESeq2_functions_final human.R")
 # Annotation file should have conditions called "conditions" that you want to compare,
 # Make sure to set rownames as character, so they are not sorted by DESeq2
 
-annotation <- read.table("anno.txt",
+annotation <- read.table("anno_wo11-087.txt",
                          header = T,
                          sep = "\t",
-                         check.names = F)
+                         check.names = F,
+                         row.names = 1)
 
-## annotation give row names Sample ID column
-row.names(annotation) <- annotation[,1]
-# Transform Conditions to factors & and set "control" in the first level 
-# so it will be used as a reference for DE genes
-annotation$ID <- NULL
-rownames(annotation) <- as.character(rownames(annotation))
-annotation$merged <- factor(x=annotation$merged)
-annotation$merged %<>% relevel("AB_ctl")
-annotation$Type <- factor(x=annotation$Type)
-annotation$Type %<>% relevel("AB")
-annotation$Treatment <- factor(x=annotation$Treatment)
-relevel(annotation$Treatment, ref="ctl")
-annotation$Donor <- as.character(annotation[["Donor"]])
-
-
-
+annotation[] <- lapply(annotation, factor)
+str(annotation)
 
 ##### Define the colours of your conditions #####
-anno <- c(ctl="#B1BBCF",
-  H1N1="#757575")
+anno <- c(CON_GM="#B1BBCF",
+  CON_WM="#757575",
+  MS_GM="#0288D1",MS_WM="#F44336")
 
 anno_batch <- c(AB="#0288D1",CB="#F44336")
 
+#################################################################################
 ##### Kallisto reads (jump this step if you have a Symbol Gene count table) ##### 
+#################################################################################
 
 # read in file with transcripts and genes
-tx2gene = read.csv("E:/Nico/Final general workflow DESeq2 human/tx2genes_human.csv")
+tx2gene = read.csv("E:/Nico/Shiny App/MS project/tx2genes_human.csv")
+
+# If you do not have this, you should use the latest bioMart transcript lists
+# dataset: mmusculus_gene_ensembl, hsapiens_gene_ensembl,rnorvegicus_gene_ensembl
+# or if you don't know the name of the species search the following list
+
+# mart = useMart("ensembl")
+#listDatasets(mart)
+
+#ensembl <- useMart(biomart="ensembl", dataset='hsapiens_gene_ensembl', host = "dec2017.archive.ensembl.org")
+#bm <- getBM(attributes = c("ensembl_transcript_id", "transcript_version", "ensembl_gene_id"), mart = ensembl)
+#tid_gid <- data.frame(transcript_id=paste(bm[,1], bm[,2], sep = "."), gene_id=bm[,3])
+
+#txi.kallisto <- tximport(files, type="kallisto", tx2gene=tid_gid)
+#counts <- txi.kallisto$counts
+
 
 # Define path where the Kallisto files are stored
-basepath = "E:/Nico/Final general workflow DESeq2 human/kallisto_output"
+basepath = "C:/Users/Nico/Documents/Master theesis/DESeq2/DESeq2/kallisto_output"
 samples = dir(path=basepath, full.names=FALSE, no..=TRUE)
 files <- file.path(basepath, samples, "abundance.h5")
 names(files) <- samples
@@ -61,27 +66,40 @@ counts <- txi.kallisto$counts
 # Filter out genes with <10 counts in all conditions & 
 # transform Ensembl Gene IDs to Gene Symbols
 count_matrix <- filter_counts(count_mat=counts, 
-                              condition_opt=annotation$Treatment, 
                               keytype_opt="ENSEMBL",
                               change_names=T,
                               organism_option = org.Hs.eg.db,
-                              threshold=0)
+                              threshold=10)
 
-#### Symbol Gene count table ####
+#################################################################################
+#### Symbol Gene count table (use this if you already have a count table) ####
+#################################################################################
+
 #load the count table and call it count_matrix
+
+count_matrix <- read.table("reads_wo11-087.txt",
+                           header = T,
+                           sep = "\t",
+                           check.names = F,
+                           row.names = 1)
 
 # Filter out genes with <10 counts in all conditions
 count_matrix <- filter_counts(count_mat=count_matrix, 
-                              condition_opt=annotation$condition, 
                               keytype_opt="SYMBOL",
-                              change_names=F)
+                              change_names=F,
+                              organism_option = org.Hs.eg.db,
+                              threshold=10)
 
 
-##### Preparing DESeqDataSetFromMatrix#####
+
+#################################################################################
+###### Preparing DESeqDataSetFromMatrix #####
+#################################################################################
 
 # design formula: if you have a known batch effect, 
 # you can enter that parameter from the annotation table in the first place of the design formula, 
 # the last place in the design formula is the parameter over which the DE genes are later calculated
+
 
 dsfm <- DESeqDataSetFromMatrix(countData = count_matrix,
                                colData = annotation,
@@ -91,6 +109,8 @@ dsfm <- DESeqDataSetFromMatrix(countData = count_matrix,
 # Run DESeq function
 dds <- DESeq(dsfm)
 dds
+
+design <- design(dds)
 
 # In case you need them for a different analysis
 normalized_counts <- counts(dds, normalized=T)
@@ -104,9 +124,9 @@ normalized_counts <- counts(dds, normalized=T)
 
 Checking_normalized_counts(raw_data=count_matrix, 
                            normalized_source=dds, 
-                           scaling_opt="log2",
+                           scaling_opt="NULL",
                            anno_colour=anno,
-                           condition="Treatment")
+                           condition="merged")
 
 
 
@@ -129,14 +149,14 @@ rld_df<-as.data.frame(assay(rld))
 ### The limits will be set automatically, 
 ### but you need to edit the midpoint after seing how the scale is distributed
 
-sample_cor(rld=rld_df, limit_set = c(NA,NA),midpoint_set = 0.95, condition="Treatment")
+sample_cor(rld=rld_df, limit_set = c(NA,NA),midpoint_set = 0.99, condition="merged")
 
 ##### Sort samples by correlation #####
 
 # Create a ggheatmap
 
-sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.95,
-                           limit_set = c(NA,NA), condition="Type")
+sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.99,
+                           limit_set = c(NA,NA), condition="merged")
 
 
 ##### PCA #####
@@ -145,9 +165,9 @@ sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.95,
 # The principal components to be ploted can be defined by PC_1 & PC_2
 
 # PCA of raw, unnormalized counts
-pca_raw <- PCA_rawdata(object=rld, intgroup="Treatment", 
+pca_raw <- PCA_rawdata(object=rld, intgroup="merged", 
                        ntop=500, PC_1=1, PC_2=2,
-                       color_obj=condition,
+                       color_obj=merged,
                        count_mat=count_matrix,
                        shape_opt="NULL",
                        anno_colour = anno)
@@ -156,14 +176,16 @@ pca_raw[1]
 # PCA of normalized, variance stabilized counts, you can either set shape_opt="NULL" or 
 # a column of annotation that you would like to plot as shape
 
-pca <- PCA_DEseq2(object=rld, intgroup="Treatment", 
+pca <- PCA_DEseq2(object=rld, intgroup="merged", 
                   ntop=500, PC_1=1, PC_2=2,
-                  color_obj=Treatment,
+                  color_obj=merged,
                   anno_colour=anno,
                   shape_opt = "NULL")
 pca[1]
 
+##################################################################
 ##### Display the compensation for known batch effect #####
+##################################################################
 
 # Using Combat
 
@@ -172,95 +194,130 @@ Combat_batch(object=rld,
              Anno_colour=anno,
              shape_opt="Type",
              ntop=500, PC_1=1, PC_2=2,
-             intgroup="Treatment")
+             intgroup="merged")
 
 # Display compensation for batch effect using Limma, if no second batch name it "NULL"
 
 Limma_batch(rld_obj=rld,
             object=rld_df, 
-            batch_obj=annotation$Donor,
+            batch_obj=annotation$PMD,
             batch2_obj=NULL,
             Anno_colour=anno,
-            shape_opt="Type",
+            shape_opt="NULL",
             ntop=500, PC_1=1, PC_2=2,
-            intgroup="Treatment")
+            intgroup="merged")
 
 
-
+###############################################################################
 ###### Calculate surrogate variables in case you have unknown batches ######
-
-# Define the normalized counts that underwent pre-filtering
-dat  <- normalized_counts
+###############################################################################
 
 # Enter your variable to compare (your biological question) 
 # behind the ~ & SVA defines a matrix for your conditions
-mod  <- model.matrix(~ Treatment, colData(dds))
+mod  <- model.matrix(~ merged, annotation)
 mod0 <- model.matrix(~   1, colData(dds))
 
 # Calculate the marix corresponding to the hidden batch (surrogate variables),
+# first run it with n.sv=NULL to see how many surrogate variables 
+# the algorithm recommands you, if the results are not as you expected them to be
+# you can try out different amounts of SVAs
 # n.sv will define how many itterations SVA will perform
-svseq <- svaseq(dat, mod, mod0, n.sv = 3)
+
+# find number of sva
+n.sv = num.sv(dat,mod,method="leek")
+svseq_NULL<- sva(assay(rld), mod, mod0, n.sv = 7)
+
+#svaobj <-svaseq(assay(rld), mod, mod0, n.sv=7)
 
 par(mfrow = c(2, 2), mar = c(3,5,3,1))
-for (i in 1:3) {
-  stripchart(svseq$sv[, i] ~ dds$Donor, vertical = TRUE, main = paste0("SV", i))
+for (i in 1:7) {
+  stripchart(svseq_NULL$sv[, i] ~ dds$merged, vertical = TRUE, main = paste0("SV", i))
   abline(h = 0)
 }
 
 # Add surrogate variables to annotation table to reanalyse the batch effect via Limma
 
-annotation$SV1 <- svseq$sv[,1]
-annotation$SV2 <- svseq$sv[,2]
-annotation$SV3 <- svseq$sv[,3]
+annotation$SV1 <- svseq_NULL$sv[,1]
+annotation$SV2 <- svseq_NULL$sv[,2]
+annotation$SV3 <- svseq_NULL$sv[,3]
+annotation$SV4 <- svseq_NULL$sv[,4]
+annotation$SV5 <- svseq_NULL$sv[,5]
+annotation$SV6 <- svseq_NULL$sv[,6]
+annotation$SV7 <- svseq_NULL$sv[,7]
+
+
+
 
 ##### Check on a PCA what influence the SVA has on the clustering of the samples ####
 
 Limma_batch_sva(rld_obj=rld,
             object=rld_df, 
-            batch_obj=annotation[c("SV1","SV2","SV3")],
+            batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
             Anno_colour=anno,
-            shape_opt="Type",
+            shape_opt="NULL",
             ntop=500, PC_1=1, PC_2=2,
-            intgroup="Treatment")
+            intgroup="merged")
 
 ##### SVA into design formula ####
 
 dds <- dds
-dds$SV1 <- svseq$sv[,1]
-dds$SV2 <- svseq$sv[,2]
-dds$SV3 <- svseq$sv[,3]
-design(dds) <- ~ SV1 + SV2 + SV3 + Treatment
+dds$SV1 <- svseq_NULL$sv[,1]
+dds$SV2 <- svseq_NULL$sv[,2]
+dds$SV3 <- svseq_NULL$sv[,3]
+dds$SV4 <- svseq_NULL$sv[,4]
+dds$SV5 <- svseq_NULL$sv[,5]
+dds$SV6 <- svseq_NULL$sv[,6]
+dds$SV7 <- svseq_NULL$sv[,7]
+
+###############################################################################
+##### Redesigning the design matrix (if a batch was found) #####
+###############################################################################
+
+
+design(dds) <- ~ SV1 + SV2 + SV3 + SV4 + SV5 + SV6 + SV7 + merged
+design <- design(dds)
 
 dds %<>% DESeq
 
-##### Not gone over yet #####
+# In case you get the following error:
+# "rows did not converge in beta, labelled in mcols(object)$betaConv. 
+# Use larger maxit argument with nbinomWaldTest"
+# run the following code
 
-##### DE gene analysis #####
+#dds <- estimateSizeFactors(dds)
+#dds <- estimateDispersions(dds)
+#dds <- nbinomWaldTest(dds, maxit=1000)
+
+# If still some rows cannot be converged, you can just delet them
+# as they are probably very low expressed genes: 
+dds <- dds[which(mcols(dds)$betaConv),]
+
+
+
 
 ##### Prepare results table
-DE_object <- Dea_analysis(dds_object=dds, 
-                          condi=annotation$merged, 
-                          IHW_option=T,
-                          alpha_option=0.05, 
-                          lfc_Threshold=1, 
-                          control="AB_ctl",
-                          condition="merged")
-
-# Prepare results table
 # By default: FDR threshold: alpha=0.05 (5% chance that DE gene is not true); 
 # IHW=T; lfcThreshold=0.58 corresponding to genes with more than 1.5 fold-change and 
 # an adjusted p value below 0.05 are defined as significant DEG; 
 # alternative options: independent filtering=TRUE if you set IHW_option=F; 
 # lfcThreshold=0 (no log2 fold change threshold) 
 # pAdjustMethod="BH"; extrem outliers will be marked as "NA"; 
+# condition: the name of the variable from annotation that contains 
+# control: here you can enter all the conditions that you want to compare the other groups against
+# (or just one if you like...)
 
-names(DE_object@results)
+DE_object <- Dea_analysis(dds_object=dds, 
+                          IHW_option=T,
+                          alpha_option=0.05, 
+                          lfc_Threshold=0.58, 
+                          control=list("CON_GM","CON_WM"),
+                          condition="merged",
+                          design_parameter=design)
 
-# Produce data frames of the results: 
-
+names(DE_object$CON_GM@results)
 ##### Get shrunken lfc object as data frame ####
 
-list_df <- df_function(results_obj=DE_object@results)
+list_df <- df_function(results_obj=DE_object$CON_GM@results)
 
 ##### MA-plot #####
 
@@ -270,8 +327,7 @@ df_names <- names(list_df)
 ### or just type MA_function(condi=NULL) for multiplot of all conditions, 
 # missing p values (NA) will not be displayed
 
-
-MA_function(condi=NULL, DE_obj = DE_object)
+MA_function(condition=NULL, DE_obj = DE_object$CON_GM,y_lim=c(-5,5))
 
 
 #####p value distribution #####
@@ -283,11 +339,11 @@ MA_function(condi=NULL, DE_obj = DE_object)
 # of 1 correspond to genes in the span between +LFC threshold 
 # and -LFC threshold, thus non-DEG
 
-plot_pval(condi=NULL,ylim_obj=c(0,10000))
+plot_pval(condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object$CON_GM)
 
 ##### Plot up- & downregulated DE genes for all conditions ####
 
-DE_genes_plot(DE_object@Number_DE_genes)
+DE_genes_plot(DE_object$CON_GM@Number_DE_genes, DE_obj=DE_object$CON_GM)
 
 
 ##### How does the multiplot function work? #####
@@ -307,34 +363,31 @@ DE_genes_plot(DE_object@Number_DE_genes)
 #### Volcano plot ####
 
 # Enter the names of the conditions that you want to compare
-Volcano_plot(input_file = DE_object, condition = "AB_H1N1", x_limit=c(-10,10), y_limit = c(NA,NA))
+Volcano_plot(input_file = DE_object$CON_GM, condition = "CON_WM", x_limit=c(-5,5), y_limit = c(NA,NA))
 
-# list_volcano <- list(Volcano_plot(input_file=DE_object, condition="suspension_Cyth2_KO"), 
-#                     Volcano_plot(input_file=DE_object, condition="fibronectin_wt"),
-#                     Volcano_plot(input_file=DE_object, condition="fibronectin_Cyth2_KO"), 
-#                     Volcano_plot(input_file=DE_object, condition="gelatin_wt"), 
-#                     Volcano_plot(input_file=DE_object, condition="gelatin_Cyth2_KO"))
+list_volcano <- list(Volcano_plot(input_file=DE_object$CON_GM, condition="CON_WM", x_limit=c(-5,5)), 
+                     Volcano_plot(input_file=DE_object$CON_GM, condition="MS_GM", x_limit=c(-5,5)),
+                     Volcano_plot(input_file=DE_object$CON_GM, condition="MS_WM", x_limit=c(-5,5)))
 
-# multiplot(plotlist = list_volcano,cols = 3)
+multiplot(plotlist = list_volcano,cols = 3)
 
 # Volcano plot displaying name of a gene or a gene list
 
 # Define and plot top genes for all conditions
 
-Top_10_H1N1_up <- DE_genes_Top_up(ntop=500, condi="NULL",dds_object=dds, condition="merged")
-Top_10_H1N1_up
+Top_10_CON_WM_up <- DE_genes_Top_up(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="CON_WM")
+Top_10_CON_WM_up
 
-Top_10_H1N1_down <- DE_genes_Top_down(ntop=10, condi="NULL")
+Top_10_CON_WM_down <- DE_genes_Top_down(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="NULL")
 
-DE_genes_Top(ntop=50,condi="NULL")
-Top_10_H1N1 <- union(Top_10_H1N1_up,Top_10_H1N1_down)
+Top<-DE_genes_Top(ntop=50, condi="NULL", input_file=DE_object$CON_GM, condition=annotation$condition)
+Top_10_CON_WM <- union(Top_10_CON_WM_up,Top_10_CON_WM_down)
 
-Top_all <- DE_genes_Top(ntop=10, condi="NULL", 
-                        dds_object=dds, condition=annotation$merged)
+Top_all <- DE_genes_Top(ntop=50, condi="NULL", input_file=DE_object$CON_GM, condition=annotation$condition)
 # This plot will display the Volcano plot with a certain gene highlighted,
 # condition equals the title of the plot
-Volcano_plot_display_gene(input_file=DE_object, condition="AB_H1N1", 
-                          gene="IL6",size=5, 
+Volcano_plot_display_gene(input_file=DE_object$CON_GM, condition="CON_WM", 
+                          gene=Top_10_CON_WM_up,size=5, 
                           x_limit=c(-10,10), y_limit = c(NA,NA))
 Volcano_plot_display_gene(input_file=DE_object, condition="AB_H1N1", 
                           gene=Top_10_H1N1,size=2, 
@@ -363,27 +416,32 @@ Volcano_plot_display_gene(input_file=DE_object, condition="AB_H1N1",
 ##### Venn Diagram #####
 # Enter the list of DE_genes of each condition
 # Define the colours in col and fill according to the anno vector defined at the beginning
-venn.diagram(list(DE_object@DE_genes$AB_H1N1$`up-regulated genes`,
-                  DE_object@DE_genes$CB_ctl$`up-regulated genes`,
-                  DE_object@DE_genes$CB_H1N1$`up-regulated genes`),
+venn.diagram(list(DE_object$CON_GM@DE_genes$CON_WM$`up-regulated genes`,
+                  DE_object$CON_GM@DE_genes$MS_GM$`up-regulated genes`,
+                  DE_object$CON_GM@DE_genes$MS_WM$`up-regulated genes`),
              filename = "Venn Diagram of upregulated genes.tiff",
-             category.names = c("AB_H1N1", "CB_ctl",
-                                "CB_H1N1"),
+             category.names = c("CON_WM", "MS_GM",
+                                "MS_WM"),
              col = anno[-c(1)],
              fill = anno[-c(1)],
              alpha = 0.5,
              main = "Venn Diagram of upregulated genes")
 
-venn.diagram(list(DE_object@DE_genes$AB_H1N1$`down-regulated genes`,
-                  DE_object@DE_genes$CB_ctl$`down-regulated genes`,
-                  DE_object@DE_genes$CB_H1N1$`down-regulated genes`),
+venn.diagram(list(DE_object$CON_GM@DE_genes$CON_WM$`down-regulated genes`,
+                  DE_object$CON_GM@DE_genes$MS_GM$`down-regulated genes`,
+                  DE_object$CON_GM@DE_genes$MS_WM$`down-regulated genes`),
              filename = "Venn Diagram of downregulated genes.tiff",
-             category.names = c("AB_H1N1", "CB_ctl",
-                                "CB_H1N1"),
+             category.names = c("CON_WM", "MS_GM",
+                                "MS_WM"),
              col = anno[-c(1)],
              fill = anno[-c(1)],
              alpha = 0.5,
              main = "Venn Diagram of downregulated genes")
+
+
+##############################################
+##### Not gone over yet #####
+##############################################
 
 
 #### Defining all DE genes ####
