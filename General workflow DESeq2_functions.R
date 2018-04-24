@@ -1,27 +1,20 @@
 list.of.packages <- c("tidyverse", "reshape2","dplyr","stringr","pheatmap","colourlovers",'VennDiagram',"ggbeeswarm","scales","magrittr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0) install.packages(new.packages)
-list.of.bioc.packages<- c("DESeq2","IHW","clusterProfiler","GSEABase","DOSE","AnnotationDbi","sva","tximport","limma","geneplotter","genefilter","org.Mm.eg.db","org.Hs.eg.db")
+list.of.bioc.packages<- c("rhdf5","DESeq2","IHW","clusterProfiler","GSEABase","DOSE","AnnotationDbi","sva","tximport","limma","geneplotter","genefilter","org.Mm.eg.db","org.Hs.eg.db","biomaRt")
 new.packages.bioc <- list.of.bioc.packages[!(list.of.bioc.packages %in% installed.packages()[,"Package"])]
 source("https://bioconductor.org/biocLite.R")
 if(length(new.packages.bioc)>0) biocLite(new.packages.bioc,suppressUpdates=TRUE)
 lapply(c(list.of.packages,list.of.bioc.packages), require, character.only = TRUE)
 
 filter_counts <- function(count_mat=count_matrix, 
-                          condition_opt=annotation$condition, 
                           keytype_opt="ENSEMBL",
                           change_names=TRUE,
                           organism_option=org.Mm.eg.db,
                           threshold=10){
   list_genes <- list()
   
-  for( i in levels(condition_opt)){
-    condition <- count_mat[,rownames(annotation[condition_opt==i,])]
-    condition <- condition[(rowMeans2(condition)>=threshold),]
-    list_genes[i] <- list(rownames(condition))
-  }
-  
-  list_genes_use <- unique(do.call(c, list_genes))
+  list_genes_use <- rowSums(count_mat)>=threshold
   
   count_matrix <- count_mat[list_genes_use,]
   
@@ -40,6 +33,7 @@ filter_counts <- function(count_mat=count_matrix,
     count_matrix
   }
   else{
+    count_matrix[1:ncol(count_matrix)]<- lapply(count_matrix, as.integer)
     count_matrix
   }
 }
@@ -152,7 +146,7 @@ Checking_normalized_counts <- function(raw_data=count_matrix,
     multiplot(raw_counts_boxplot, normalized_counts_boxplot, cols=2)
   }}
 Var_stab<- function(deseq_count_matrix=dsfm, blind_param=T, count_mat=count_matrix){
-  if(ncol(count_mat)<30){
+  if(ncol(count_mat)<40){
     rld<-rlog(deseq_count_matrix, blind=blind_param)
   }
   else{
@@ -489,7 +483,7 @@ Limma_batch <- function(rld_obj=rld,
   # select the ntop genes by variance
   rv <- rowVars(assay(rld_obj))
   
-  select <- order(rv, decreasing=TRUE)[seq_len(min(500, length(rv)))]
+  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
   
   pca <- prcomp(t(removedbatch_rld[select,]))
   
@@ -562,15 +556,18 @@ Limma_batch_sva <- function(rld_obj=rld,
                         ntop=500, PC_1=1, PC_2=2,
                         intgroup="Treatment"){
   
-  removedbatch_rld <- removeBatchEffect(x=object, covariates=batch_obj)
-  
+  removedbatch_rld <- removeBatchEffect(x=as.matrix(assay(rld)),covariates = batch_obj,design = model.matrix(~annotation$merged))
+  if(ntop=="all"){
+    pca <- prcomp(t(removedbatch_rld)) 
+  }
+  else{
   # select the ntop genes by variance
   rv <- rowVars(assay(rld_obj))
   
-  select <- order(rv, decreasing=TRUE)[seq_len(min(500, length(rv)))]
+  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
   
   pca <- prcomp(t(removedbatch_rld[select,]))
-  
+  }
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
   
   
@@ -636,71 +633,90 @@ Limma_batch_sva <- function(rld_obj=rld,
 setClass(Class = "DESeq2_analysis_object",
          slots = c(parameters="list", results="list", DE_genes="list", Number_DE_genes="data.frame"))
 
-Dea_analysis <- function(dds_object=dds, condi=annotation$condition, IHW_option=F,alpha_option=0.1, lfc_Threshold=0, control="unstimulated", condition="condition"){
-  DE_object <- new(Class = "DESeq2_analysis_object")
-  # Define parameters
-  DE_object@parameters <- c(dds_object,IHW_option, alpha_option, lfc_Threshold, control, condition)
-  # Create results table as data.frame
+Dea_analysis <- function(dds_object=dds, 
+                         condi=annotation$condition, 
+                         IHW_option=F,alpha_option=0.1, 
+                         lfc_Threshold=0, control="unstimulated", 
+                         condition="condition",
+                         design_parameter=design){
+  list_controls <- list()
+  list_controls <- control
   cond_list <- list()
-  cond_list <- levels(condi)[-1]
   list_conditions<-list()
   list_DE_genes <- list()
   list_DE_sum <- list()
   list_test_all <- list()
   list_DE_genes_names <- list()
-  for (i in cond_list){
+  DE_objects <- list()
+  
+  for (i in list_controls){
+  DE_object <- new(Class = "DESeq2_analysis_object")
+  # Create results table as data.frame
+  
+  # Define the condition you want to compare everything to
+  annotation[[condition]]<-relevel(annotation[[condition]], ref=paste0(i))
+  dsfm <- DESeqDataSetFromMatrix(countData = count_matrix,
+                                 colData = annotation,
+                                 design = design_parameter )
+  dds <- DESeq(dsfm)
+  dds <- dds[which(mcols(dds)$betaConv),]
+  cond_list<- levels(annotation[[condition]])[-1]
+  # Define parameters
+  DE_object@parameters <- c(dds,IHW_option, alpha_option, lfc_Threshold, i, condition)
+  for (j in cond_list){
     if (IHW_option==T) {
-      res_deseq_lfc <- results(dds_object,contrast = c(condition, i, control),
+      res_deseq_lfc <- results(dds,contrast = c(condition, j, i),
                                lfcThreshold = lfc_Threshold,
                                alpha = alpha_option,
                                filterFun = ihw,
                                altHypothesis = "greaterAbs")
-      res_deseq_lfc <- lfcShrink(dds_object, contrast = c(condition, i, control),
+      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, j, i),
                                  res=res_deseq_lfc)
       res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-      list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
+      list_conditions[[paste(j)]] <- assign(  paste(j), res_deseq_lfc )
     }
     if (IHW_option==F) {
-      res_deseq_lfc <- results(dds,contrast = c(condition, i, control),
+      res_deseq_lfc <- results(dds,contrast = c(condition, j, i),
                                lfcThreshold = lfc_Threshold,
                                alpha = alpha_option,
                                altHypothesis = "greaterAbs")
-      res_deseq_lfc <- lfcShrink(dds_object, contrast = c(condition, i, control),
+      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, j, i),
                                  res=res_deseq_lfc)
       res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-      list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
+      list_conditions[[paste(j)]] <- assign(  paste(j), res_deseq_lfc )
     } 
   }
   DE_object@results <- list_conditions
-  for (i in cond_list){
-      list_DE_genes <- list(rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                                   list_conditions[[paste(i)]]$padj<alpha_option&
-                                                                   list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]),
-                            rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                                   list_conditions[[paste(i)]]$padj<alpha_option&
-                                                                   list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+  for (j in cond_list){
+      list_DE_genes <- list(rownames(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
+                                                                   list_conditions[[paste(j)]]$padj<alpha_option&
+                                                                   list_conditions[[paste(j)]]$log2FoldChange>lfc_Threshold,]),
+                            rownames(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
+                                                                   list_conditions[[paste(j)]]$padj<alpha_option&
+                                                                   list_conditions[[paste(j)]]$log2FoldChange<(-lfc_Threshold),]))
       names(list_DE_genes) = c(paste("up-regulated genes"), 
                                paste("down-regulated genes"))
-      list_DE_genes_names[[paste(i)]] <- assign(  paste(i), list_DE_genes )
-      list_DE_sum <- list(nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                             list_conditions[[paste(i)]]$padj<alpha_option&
-                                                             list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]) ,
-                          nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                             list_conditions[[paste(i)]]$padj<alpha_option&
-                                                             list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+      list_DE_genes_names[[paste(j)]] <- assign(  paste(j), list_DE_genes )
+      list_DE_sum <- list(nrow(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
+                                                             list_conditions[[paste(j)]]$padj<alpha_option&
+                                                             list_conditions[[paste(j)]]$log2FoldChange>lfc_Threshold,]) ,
+                          nrow(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
+                                                             list_conditions[[paste(j)]]$padj<alpha_option&
+                                                             list_conditions[[paste(j)]]$log2FoldChange<(-lfc_Threshold),]))
       df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
                                 row.names = c(paste("up-regulated padj. <", alpha_option, sep = "_"), 
                                               paste("down-regulated padj. <", alpha_option, sep = "_")))
-      list_test_all[[paste(i)]] <- assign(  paste(i), df_DE_genes )
+      list_test_all[[paste(j)]] <- assign(  paste(j), df_DE_genes )
     }
   df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
                             row.names = c(paste("up-regulated padj. <", alpha_option, sep = " "), 
                                           paste("down-regulated padj. <", alpha_option, sep = " ")))
   DE_object@DE_genes <- list_DE_genes_names
   df <- do.call("cbind", list_test_all)
-  colnames(df) <- levels(condi)[-1]
+  colnames(df) <- levels(annotation[[condition]])[-1]
   DE_object@Number_DE_genes <- df
-  return(DE_object)
+  DE_objects[[paste(i)]] <- assign(  paste(i), DE_object )}
+  return(DE_objects)
 }
 multiplot<-function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
@@ -746,17 +762,17 @@ df_function <- function(results_obj=DE_object_01@results){
   }
   list_df
   }
-MA_function <- function(condi=NULL, DE_obj=DE_object){
+MA_function <- function(condition=NULL, DE_obj=DE_object, y_lim=c(-10,10)){
   list_store <- list()
-  if(!is.null(condi)){ multi_plot =F} else {multi_plot=T}
-  plot_MA <- function(condi, lfc_shrinkage=T){
-    label <- as.character(condi)
+  if(!is.null(condition)){ multi_plot =F} else {multi_plot=T}
+  plot_MA <- function(condition, lfc_shrinkage=T){
+    label <- as.character(condition)
      
-      main_name = paste(label," vs ", DE_obj@parameters[[6]])
+      main_name = paste(label," vs ", DE_obj@parameters[[5]])
       ylab_name = "MAP log2 fold change"
     
     # get shrunken lfc object as data frame
-    res_deseq_lfc_df <- as.data.frame(list_df[[condi]])
+    res_deseq_lfc_df <- as.data.frame(list_df[[condition]])
     
     res_deseq_lfc_df$significant <- res_deseq_lfc_df$padj < DE_obj@parameters[[3]]
     # res_deseq_lfc_df$significant_lFC <- (res_deseq_lfc_df$padj < 0.1 & res_deseq_lfc_df$log2FoldChange>1) 
@@ -765,7 +781,7 @@ MA_function <- function(condi=NULL, DE_obj=DE_object){
     ggplot(res_deseq_lfc_df, aes(x = baseMean, y = log2FoldChange)) + 
       geom_point(aes(color = padj<DE_obj@parameters[[3]]), size = 1.5, alpha = 0.5) + 
       geom_hline(yintercept = 0, color = "slategray", size=1) + 
-      ylim(c(-10, 10)) + ylab(ylab_name) + 
+      ylim(y_lim) + ylab(ylab_name) + 
       theme_bw() +
       labs(title = main_name, color="Significance") +
       scale_x_continuous("Mean expression", trans = "log10",breaks=c(1,10, 100,1000,10000,100000)) +
@@ -773,35 +789,35 @@ MA_function <- function(condi=NULL, DE_obj=DE_object){
                           values = c("#2B2D42","#6E0B21", "#7A7D7F"))
   }
   if (multi_plot==F){
-    plot_MA(condi=condi)
+    plot_MA(condition=condition)
     
   } 
   else {
     for (i in df_names){
-      list_store[[paste("MA_",i,"plot_lfc_shrinkage",sep = "_")]] <- plot_MA(condi = i)
+      list_store[[paste("MA_",i,"plot_lfc_shrinkage",sep = "_")]] <- plot_MA(condition = i)
     }
     multiplot(plotlist = list_store,cols = 2)
   }
 }
 
-plot_pval <- function(condi=NULL,ylim_obj=c(0,10000), DE_obj=DE_object){
+plot_pval <- function(condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object){
   list_pval <- list()
-  if(!is.null(condi)){ multi_plot =F} else {multi_plot=T}
-  histo <- function(condi){
-    label <- as.character(condi)
-    condi <- as.data.frame(list_df[[condi]])
-    ggplot(condi, aes(x = pvalue)) + 
+  if(!is.null(condition)){ multi_plot =F} else {multi_plot=T}
+  histo <- function(condition){
+    label <- as.character(condition)
+    condition <- as.data.frame(list_df[[condition]])
+    ggplot(condition, aes(x = pvalue)) + 
       geom_histogram(binwidth = 0.025, boundary = 0)+
       theme_bw() + labs(title = paste(label,"vs", DE_obj@parameters[[6]],sep=" "))+
       ylab("Frequency") + ylim(ylim_obj)
   }
   if (multi_plot==F){
-    histo_gram <- histo(condi=condi)
+    histo_gram <- histo(condition=condition)
     return(histo_gram)
   }
   if (multi_plot==T){
     for (i in df_names){
-      list_pval[[paste("pval",i,sep = "_")]] <- histo(condi = i)
+      list_pval[[paste("pval",i,sep = "_")]] <- histo(condition = i)
     }
     multiplot(plotlist = list_pval,cols = 2)
   }
@@ -833,16 +849,16 @@ DE_genes_plot <- function(DE_genes_df = DE_object@Number_DE_genes, DE_obj=DE_obj
 
 
 Volcano_plot <- function(input_file=DE_object, condition="CpG", x_limit=c(-10,10), y_limit=c(NA,NA)){
-  df <- as.data.frame(DE_object@results[[condition]])
+  df <- as.data.frame(input_file@results[[condition]])
   df$declogp <- -log10(df$padj)
   
   ggplot(df, aes(x=df$log2FoldChange, y=df$declogp))+
-    geom_point(colour=ifelse(df$log2FoldChange< -DE_object@parameters[[4]]&df$declogp>10^-(DE_object@parameters[[3]]) | 
-                               df$log2FoldChange>DE_object@parameters[[4]]&df$declogp>10^-(DE_object@parameters[[3]]),"red","grey"))+
+    geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]) | 
+                               df$log2FoldChange>input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]),"red","grey"))+
     scale_y_continuous(expression('-log'['10']*' adjusted p-value'), limits=y_limit)+
     scale_x_continuous(expression('Fold change log'['2']), limits=x_limit)+
     coord_cartesian(xlim = x_limit)+
-    labs(title=paste("Volcano plot ", condition, "VS. ",DE_object@parameters[[6]]))+
+    labs(title=paste(condition, "VS. ",input_file@parameters[[5]]))+
     theme(panel.background = element_rect(fill=NA, color = "black"),
           plot.background = element_blank(),
           legend.background = element_blank(),
@@ -856,12 +872,12 @@ Volcano_plot <- function(input_file=DE_object, condition="CpG", x_limit=c(-10,10
 Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG", 
                                       gene="Tnf",size_def=3, x_limit=c(-10,10),
                                       y_limit=c(NA,NA)){
-  df <- as.data.frame(DE_object@results[[condition]])
+  df <- as.data.frame(input_file@results[[condition]])
   df$declogp <- -log(df$padj)
   
   ggplot(df, aes(x=df$log2FoldChange, y=df$declogp))+
-    geom_point(colour=ifelse(df$log2FoldChange< -DE_object@parameters[[4]]&df$declogp>10^-(DE_object@parameters[[3]]) | 
-                               df$log2FoldChange>DE_object@parameters[[4]]&df$declogp>10^-(DE_object@parameters[[3]]),"red","grey"))+
+    geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]) | 
+                               df$log2FoldChange>input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]),"red","grey"))+
     scale_y_continuous(expression('-log'['10']*' p-value'), limits = y_limit)+
     scale_x_continuous(expression('Fold change log'['2']),limits = x_limit)+
     geom_text(data=df[gene,], mapping=aes(x=df[gene,][,"log2FoldChange"], 
@@ -872,7 +888,7 @@ Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG",
                                            y=df[gene,][,"declogp"]), 
                colour="blue")+
     
-    labs(title=paste("Volcano plot ", condition, "VS. ",DE_object@parameters[[6]]))+
+    labs(title=paste(condition, "VS. ",input_file@parameters[[6]]))+
     theme(panel.background = element_rect(fill=NA, color = "black"),
           plot.background = element_blank(),
           legend.background = element_blank(),
@@ -1245,31 +1261,31 @@ reorder_cormat <- function(cormat){
   hc <- hclust(dd)
   cormat <-cormat[hc$order, hc$order]
 }
-DE_genes_Top <- function(ntop=500, condi="NULL", dds_object=dds, condition=annotation$condition){
+DE_genes_Top <- function(ntop=500, condi="NULL", input_file=DE_object$CON_GM, condition=annotation$condition){
   if (condi=="NULL"){
     cond_list <- list()
     list_top_DE <- list()
-    cond_list <- levels(condition)[-1]
+    cond_list <- names(input_file@results)
     for (i in cond_list){
-      select <- order(DE_object@results[[i]]$padj, decreasing = F, na.last=T )[seq_len(min(ntop, length(DE_object@results[[i]]$padj)))]
-      Top500_DE_genes <- rownames(DE_object@results[[i]][select,])
+      select <- order(input_file@results[[i]]$padj, decreasing = F, na.last=T )[seq_len(min(ntop, length(input_file@results[[i]]$padj)))]
+      Top500_DE_genes <- rownames(input_file@results[[i]][select,])
       list_top_DE[[paste(i)]] <- assign(paste(i),Top500_DE_genes )}
     list_top_DE<-do.call(c, list_top_DE)
     list_top_DE <- unique(list_top_DE)
   }
   else {
-    select <- order(DE_object@results[[condi]]$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(DE_object@results[[condi]]$padj)))]
+    select <- order(input_file@results[[condi]]$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(DE_object@results[[condi]]$padj)))]
     
-    Top500_DE_genes <- DE_object@results[[condi]][select,]
+    Top500_DE_genes <- input_file@results[[condi]][select,]
   }
 }
-DE_genes_Top_up <- function(ntop=500, condi="NULL",dds_object=dds, condition="merged"){
+DE_genes_Top_up <- function(ntop=500, condi="NULL",input_file=DE_object$CON_GM, condition="merged"){
   if (condi=="NULL"){
     cond_list <- list()
     list_top_DE <- list()
-    cond_list <- unique(annotation[[condition]])[2:length(resultsNames(dds_object))]
+    cond_list <- names(input_file@results)
     for (i in cond_list){
-      df<-DE_object@results[[i]][DE_object@results[[i]]$log2FoldChange>0,]
+      df<-input_file@results[[i]][input_file@results[[i]]$log2FoldChange>0,]
       select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
       
       Top500_DE_genes <- rownames(df[select,])
@@ -1278,28 +1294,29 @@ DE_genes_Top_up <- function(ntop=500, condi="NULL",dds_object=dds, condition="me
     list_top_DE <- unique(list_top_DE)
   }
   else {
-    df<-DE_object@results[[condi]][DE_object@results[[condi]]$log2FoldChange>0,]
+    df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange>0,]
     select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
     
     Top500_DE_genes <- rownames(df[select,])
   }
 }
-DE_genes_Top_down <- function(ntop=500, condi="NULL",dds_object=dds, condition="merged"){
+
+DE_genes_Top_down <- function(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="NULL"){
   if (condi=="NULL"){
     cond_list <- list()
     list_top_DE <- list()
-    cond_list <- unique(annotation[[condition]])[2:length(resultsNames(dds_object))]
+    cond_list <- names(input_file@results)
     for (i in cond_list){
-      df<-DE_object@results[[i]][DE_object@results[[i]]$log2FoldChange<0,]
+      df<-input_file@results[[i]][input_file@results[[i]]$log2FoldChange<0,]
       select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
       
       Top500_DE_genes <- rownames(df[select,])
       list_top_DE[[paste(i)]] <- assign(paste(i),Top500_DE_genes )}
     list_top_DE<-do.call(c, list_top_DE)
-    list_top_DE<-unique(list_top_DE)
+    list_top_DE <- unique(list_top_DE)
   }
   else {
-    df<-DE_object@results[[condi]][DE_object@results[[condi]]$log2FoldChange<0,]
+    df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange<0,]
     select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
     
     Top500_DE_genes <- rownames(df[select,])
