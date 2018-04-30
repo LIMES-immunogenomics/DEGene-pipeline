@@ -165,22 +165,22 @@ sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.99,
 # The principal components to be ploted can be defined by PC_1 & PC_2
 
 # PCA of raw, unnormalized counts
-pca_raw <- PCA_rawdata(object=rld, intgroup="merged", 
+pca_raw <- PCA_rawdata(object=rld,
                        ntop=500, PC_1=1, PC_2=2,
-                       color_obj=merged,
+                       color_obj="merged",
                        count_mat=count_matrix,
                        shape_opt="NULL",
-                       anno_colour = anno)
+                       discret=F)
 pca_raw[1]
 
 # PCA of normalized, variance stabilized counts, you can either set shape_opt="NULL" or 
 # a column of annotation that you would like to plot as shape
 
-pca <- PCA_DEseq2(object=rld, intgroup="merged", 
+pca <- PCA_DEseq2(object=rld, 
                   ntop=500, PC_1=1, PC_2=2,
-                  color_obj=merged,
-                  anno_colour=anno,
-                  shape_opt = "NULL")
+                  color_obj="merged",
+                  shape_opt = "NULL",
+                  discret=F)
 pca[1]
 
 ##################################################################
@@ -191,10 +191,10 @@ pca[1]
 
 Combat_batch(object=rld, 
              batch=annotation$Donor, 
-             Anno_colour=anno,
              shape_opt="Type",
              ntop=500, PC_1=1, PC_2=2,
-             intgroup="merged")
+             color_obj="merged",
+             discret=F)
 
 # Display compensation for batch effect using Limma, if no second batch name it "NULL"
 
@@ -202,10 +202,10 @@ Limma_batch(rld_obj=rld,
             object=rld_df, 
             batch_obj=annotation$PMD,
             batch2_obj=NULL,
-            Anno_colour=anno,
             shape_opt="NULL",
             ntop=500, PC_1=1, PC_2=2,
-            intgroup="merged")
+            color_obj="merged",
+            discret=F)
 
 
 ###############################################################################
@@ -253,10 +253,10 @@ annotation$SV7 <- svseq_NULL$sv[,7]
 Limma_batch_sva(rld_obj=rld,
             object=rld_df, 
             batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
-            Anno_colour=anno,
             shape_opt="NULL",
             ntop=500, PC_1=1, PC_2=2,
-            intgroup="merged")
+            color_obj="merged",
+            discret=F)
 
 ##### SVA into design formula ####
 
