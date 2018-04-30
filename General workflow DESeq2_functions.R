@@ -202,51 +202,57 @@ sorted_pearson_correaltion<- function(rld,midpoint_set = 0.9995,limit_set = c(0.
           plot.title = element_text(hjust=0.5))+
     coord_fixed()
 } 
-PCA_rawdata <-function(object=rld, intgroup="condition", 
+PCA_rawdata <-function(object=rld, color_obj="condition", 
                        ntop=500, PC_1=1, PC_2=2,
-                       color_obj=Treatment,
                        count_mat=count_matrix,
                        shape_opt="NULL",
-                       anno_colour = anno){
-  # calculate the variance for each gene
-  rv <- rowVars(assay(object))
+                       discret=F){
+  if(ntop=="all"){
+    pca <- prcomp(t(log10(as.data.frame(count_mat)+1))) 
+  }
+  else{
+    # calculate the variance for each gene
+    rv <- rowVars(assay(object))
+    
+    # select the ntop genes by variance
+    select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
+    
+    # perform a PCA on the data in assay(x) for the selected genes
+    pca <- prcomp(t(log10(as.data.frame(count_mat)+1)[select,]))
+  }
   
-  # select the ntop genes by variance
-  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  
-  # perform a PCA on the data in assay(x) for the selected genes
-  pca <- prcomp(t(log10(as.data.frame(count_matrix)+1)[select,]))
   
   # the contribution to the total variance for each component
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
   
-  if (!all(intgroup %in% names(colData(object)))) {
-    stop("the argument 'intgroup' should specify columns of colData(dds)")
+  if (!all(color_obj %in% names(colData(object)))) {
+    stop("the argument 'color_obj' should specify columns of colData(dds)")
   }
   
-  intgroup.df <- as.data.frame(colData(object)[, intgroup, drop=FALSE])
+  color_obj.df <- as.data.frame(colData(object)[, color_obj, drop=FALSE])
   
-  # add the intgroup factors together to create a new grouping factor
-  group <- if (length(intgroup) > 1) {
-    factor(apply( intgroup.df, 1, paste, collapse=":"))
+  # add the color_obj factors together to create a new grouping factor
+  group <- if (length(color_obj) > 1) {
+    factor(apply( color_obj.df, 1, paste, collapse=":"))
   } 
   else {
-    colData(object)[[intgroup]]
+    colData(object)[[color_obj]]
   }
   
   # assembly the data for the plot
-  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, intgroup.df, name=colnames(object))
+  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, color_obj.df, name=colnames(object))
   colnames(pcaData)[1] <- paste("PC_1")
   colnames(pcaData)[2] <- paste("PC_2")
   attr(pcaData, "percentVar") <- percentVar[c(PC_1,PC_2)]
-  pcaData$condition <- pcaData[[paste0(intgroup)]]
+  pcaData$condition <- pcaData[[paste0(color_obj)]]
   # transform variance to percent
   percentVar <- round(100 * attr(pcaData, "percentVar"))
-  color_title<-paste0(intgroup)
+  color_title<-paste0(color_obj)
+  if (discret==F){
   if(shape_opt=="NULL"){
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
       geom_point(size =3) +
-      scale_color_manual(values=anno_colour,name=color_title)+
+      scale_color_discrete(name=color_title)+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
       coord_fixed()+
@@ -268,7 +274,7 @@ PCA_rawdata <-function(object=rld, intgroup="condition",
     legend_title <- paste0(shape_opt)
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
       geom_point(size =3) +
-      scale_color_manual(values=anno_colour,name=color_title)+
+      scale_color_discrete(name=color_title)+
       scale_shape(name=legend_title)+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -285,56 +291,108 @@ PCA_rawdata <-function(object=rld, intgroup="condition",
             axis.ticks = element_line(color = "black",size = 1),
             axis.title = element_text(colour = "black", size = 10, face = "bold"),
             legend.key = element_rect(fill = "white", colour = "black"))
+  }}
+  else{
+    color_obj<-as.integer(annotation[[paste0(color_obj)]])
+    if(shape_opt=="NULL"){
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
+    else{
+      color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+      legend_title <- paste0(shape_opt)
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        scale_shape(name=legend_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
   }
   pca_summary <- plot(pca, main="Variance explained by components", type="l")
   pca <- list()
   pca <- list(pca_plot,pca_summary)
 }
 
-PCA_DEseq2 <- function(object=rld, intgroup="condition", 
+PCA_DEseq2 <- function(object=rld, color_obj="condition", 
                        ntop=500, PC_1=2, PC_2=3,
-                       color_obj=condition,
-                       anno_colour=anno,
-                       shape_opt = "NULL"){
-  # calculate the variance for each gene
-  rv <- rowVars(assay(object))
-  
-  # select the ntop genes by variance
-  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  
-  # perform a PCA on the data in assay(x) for the selected genes
-  pca <- prcomp(t(assay(object)[select,]))
+                       shape_opt = "NULL",
+                       discret=F){
+  if(ntop=="all"){
+    pca <- prcomp(t(assay(object))) 
+  }
+  else{
+    # calculate the variance for each gene
+    rv <- rowVars(assay(object))
+    
+    # select the ntop genes by variance
+    select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
+    
+    # perform a PCA on the data in assay(x) for the selected genes
+    pca <- prcomp(t(assay(object)[select,]))
+  }
   
   # the contribution to the total variance for each component
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
   
-  if (!all(intgroup %in% names(colData(object)))) {
-    stop("the argument 'intgroup' should specify columns of colData(dds)")
+  if (!all(color_obj %in% names(colData(object)))) {
+    stop("the argument 'color_obj' should specify columns of colData(dds)")
   }
   
-  intgroup.df <- as.data.frame(colData(object)[, intgroup, drop=FALSE])
+  color_obj.df <- as.data.frame(colData(object)[, color_obj, drop=FALSE])
   
-  # add the intgroup factors together to create a new grouping factor
-  group <- if (length(intgroup) > 1) {
-    factor(apply( intgroup.df, 1, paste, collapse=":"))
+  # add the color_obj factors together to create a new grouping factor
+  group <- if (length(color_obj) > 1) {
+    factor(apply( color_obj.df, 1, paste, collapse=":"))
   } 
   else {
-    colData(object)[[intgroup]]
+    colData(object)[[color_obj]]
   }
   
   # assembly the data for the plot
-  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, intgroup.df, name=colnames(object))
+  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, color_obj.df, name=colnames(object))
   colnames(pcaData)[1] <- paste("PC_1")
   colnames(pcaData)[2] <- paste("PC_2")
   attr(pcaData, "percentVar") <- percentVar[c(PC_1,PC_2)]
-  pcaData$condition <- pcaData[[paste0(intgroup)]]
+  pcaData$condition <- pcaData[[paste0(color_obj)]]
   # transform variance to percent
   percentVar <- round(100 * attr(pcaData, "percentVar"))
-  
+  color_title<-paste0(color_obj)
+  if(discret ==F){
   if(shape_opt=="NULL"){
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
       geom_point(size =3) +
-      scale_color_manual(values=anno_colour)+
+      scale_color_discrete()+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
       coord_fixed()+
@@ -356,7 +414,7 @@ PCA_DEseq2 <- function(object=rld, intgroup="condition",
     legend_title <- paste0(shape_opt)
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
       geom_point(size =3) +
-      scale_color_manual(values=anno_colour)+
+      scale_color_discrete()+
       scale_shape(name=legend_title)+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -373,6 +431,53 @@ PCA_DEseq2 <- function(object=rld, intgroup="condition",
             axis.ticks = element_line(color = "black",size = 1),
             axis.title = element_text(colour = "black", size = 10, face = "bold"),
             legend.key = element_rect(fill = "white", colour = "black"))
+  }}
+  else{
+    if(shape_opt=="NULL"){
+          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
+    else{
+          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+      legend_title <- paste0(shape_opt)
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        scale_shape(name=legend_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
   }
   pca_summary <- plot(pca, main="Variance explained by components", type="l")
   pca <- list()
@@ -380,17 +485,10 @@ PCA_DEseq2 <- function(object=rld, intgroup="condition",
 }
 Combat_batch <- function(object=rld, 
                          batch=annotation$Sex, 
-                         Anno_colour=anno,
                          shape_opt="Sex",
                          ntop=500, PC_1=1, PC_2=2,
-                         intgroup="condition"){
-  rv <- rowVars(assay(object))
-  
-  # select the ntop genes by variance
-  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  
-  
-  
+                         color_obj="condition",
+                         discret=F){
   dsfm_comb <- dsfm
   
   dsfm_comb <- estimateSizeFactors(dsfm_comb)
@@ -406,28 +504,39 @@ Combat_batch <- function(object=rld,
   combat_count_matrix <- apply(combat_count_matrix, 2, as.integer)
   
   # PCA
-  
-  pca <- prcomp(t(combat_count_matrix[select,]))
+  if(ntop=="all"){
+    pca <- prcomp(t(assay(object))) 
+  }
+  else{
+    rv <- rowVars(assay(object))
+    
+    # select the ntop genes by variance
+    select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
+    
+    pca <- prcomp(t(combat_count_matrix[select,]))
+    
+  }
   
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
+  color_title<-paste0(color_obj)
   
   
-  
-  intgroup.df <- as.data.frame(annotation[paste0(intgroup)])
-  group <- annotation[paste0(intgroup)]
-  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, intgroup.df, name=colnames(combat_count_matrix))
+  color_obj.df <- as.data.frame(annotation[paste0(color_obj)])
+  group <- annotation[paste0(color_obj)]
+  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, color_obj.df, name=colnames(combat_count_matrix))
   colnames(pcaData)[1] <- paste("PC_1")
   colnames(pcaData)[2] <- paste("PC_2")
   attr(pcaData, "percentVar") <- percentVar[c(PC_1,PC_2)]
-  pcaData$condition <- pcaData[[paste0(intgroup)]]
+  pcaData$condition <- pcaData[[paste0(color_obj)]]
   # transform variance to percent
   percentVar <- round(100 * attr(pcaData, "percentVar"))
  
   #plot PCA
+  if(discret ==F){
   if(shape_opt=="NULL"){
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
       geom_point(size =3) +
-      scale_color_manual(values=Anno_colour)+
+      scale_color_discrete()+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
       coord_fixed()+
@@ -449,7 +558,7 @@ Combat_batch <- function(object=rld,
     legend_title <- paste0(shape_opt)
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
       geom_point(size =3) +
-      scale_color_manual(values=Anno_colour)+
+      scale_color_discrete()+
       scale_shape(name=legend_title)+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -466,6 +575,53 @@ Combat_batch <- function(object=rld,
             axis.ticks = element_line(color = "black",size = 1),
             axis.title = element_text(colour = "black", size = 10, face = "bold"),
             legend.key = element_rect(fill = "white", colour = "black"))
+  }}
+  else{
+    if(shape_opt=="NULL"){
+          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
+    else{
+          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+      legend_title <- paste0(shape_opt)
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        scale_shape(name=legend_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
   }
   pca_plot
 }
@@ -473,40 +629,46 @@ Limma_batch <- function(rld_obj=rld,
                         object=rld_df, 
                         batch_obj=annotation$Sex,
                         batch2_obj=NULL,
-                        Anno_colour=anno,
                         shape_opt="Sex",
                         ntop=500, PC_1=1, PC_2=2,
-                        intgroup="Treatment"){
+                        color_obj="Treatment",
+                        discret=F){
   
   removedbatch_rld <- removeBatchEffect(x=object, batch=batch_obj, batch2 = batch2_obj)
-
-  # select the ntop genes by variance
-  rv <- rowVars(assay(rld_obj))
+  if(ntop=="all"){
+    pca <- prcomp(t(removedbatch_rld)) 
+  }
+  else{
+    # select the ntop genes by variance
+    rv <- rowVars(assay(rld_obj))
+    
+    select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
+    
+    pca <- prcomp(t(removedbatch_rld[select,]))
+  }
   
-  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  
-  pca <- prcomp(t(removedbatch_rld[select,]))
   
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
   
+  color_title<-paste0(color_obj)
   
-  
-  intgroup.df <- as.data.frame(annotation[paste0(intgroup)])
-  group <- annotation[paste0(intgroup)]
-  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, intgroup.df, name=colnames(object))
+  color_obj.df <- as.data.frame(annotation[paste0(color_obj)])
+  group <- annotation[paste0(color_obj)]
+  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, color_obj.df, name=colnames(object))
   colnames(pcaData)[1] <- paste("PC_1")
   colnames(pcaData)[2] <- paste("PC_2")
   attr(pcaData, "percentVar") <- percentVar[c(PC_1,PC_2)]
-  pcaData$condition <- pcaData[[paste0(intgroup)]]
+  pcaData$condition <- pcaData[[paste0(color_obj)]]
   
   # transform variance to percent
   percentVar <- round(100 * attr(pcaData, "percentVar"))
   
   #plot PCA
+  if(discret ==F){
   if(shape_opt=="NULL"){
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
       geom_point(size =3) +
-      scale_color_manual(values=Anno_colour)+
+      scale_color_discrete()+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
       coord_fixed()+
@@ -528,7 +690,7 @@ Limma_batch <- function(rld_obj=rld,
     legend_title <- paste0(shape_opt)
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
       geom_point(size =3) +
-      scale_color_manual(values=Anno_colour)+
+      scale_color_discrete()+
       scale_shape(name=legend_title)+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -545,16 +707,63 @@ Limma_batch <- function(rld_obj=rld,
             axis.ticks = element_line(color = "black",size = 1),
             axis.title = element_text(colour = "black", size = 10, face = "bold"),
             legend.key = element_rect(fill = "white", colour = "black"))
+  }}
+  else{
+    if(shape_opt=="NULL"){
+          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
+    else{
+          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+      legend_title <- paste0(shape_opt)
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        scale_shape(name=legend_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
   }
   pca_plot
 }
 Limma_batch_sva <- function(rld_obj=rld,
                         object=rld_df, 
                         batch_obj=annotation$Sex,
-                        Anno_colour=anno,
                         shape_opt="Sex",
                         ntop=500, PC_1=1, PC_2=2,
-                        intgroup="Treatment"){
+                        color_obj="Treatment",
+                        discret=F){
   
   removedbatch_rld <- removeBatchEffect(x=as.matrix(assay(rld)),covariates = batch_obj,design = model.matrix(~annotation$merged))
   if(ntop=="all"){
@@ -570,24 +779,25 @@ Limma_batch_sva <- function(rld_obj=rld,
   }
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
   
+  color_title<-paste0(color_obj)
   
-  
-  intgroup.df <- as.data.frame(annotation[paste0(intgroup)])
-  group <- annotation[paste0(intgroup)]
-  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, intgroup.df, name=colnames(object))
+  color_obj.df <- as.data.frame(annotation[paste0(color_obj)])
+  group <- annotation[paste0(color_obj)]
+  pcaData <- data.frame(PC1=pca$x[,PC_1], PC2=pca$x[,PC_2], group=group, color_obj.df, name=colnames(object))
   colnames(pcaData)[1] <- paste("PC_1")
   colnames(pcaData)[2] <- paste("PC_2")
   attr(pcaData, "percentVar") <- percentVar[c(PC_1,PC_2)]
-  pcaData$condition <- pcaData[[paste0(intgroup)]]
+  pcaData$condition <- pcaData[[paste0(color_obj)]]
   
   # transform variance to percent
   percentVar <- round(100 * attr(pcaData, "percentVar"))
   
   #plot PCA
+  if(discret ==F){
   if(shape_opt=="NULL"){
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
       geom_point(size =3) +
-      scale_color_manual(values=Anno_colour)+
+      scale_color_discrete()+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
       coord_fixed()+
@@ -609,7 +819,7 @@ Limma_batch_sva <- function(rld_obj=rld,
     legend_title <- paste0(shape_opt)
     pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
       geom_point(size =3) +
-      scale_color_manual(values=Anno_colour)+
+      scale_color_discrete()+
       scale_shape(name=legend_title)+
       xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
       ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -626,6 +836,53 @@ Limma_batch_sva <- function(rld_obj=rld,
             axis.ticks = element_line(color = "black",size = 1),
             axis.title = element_text(colour = "black", size = 10, face = "bold"),
             legend.key = element_rect(fill = "white", colour = "black"))
+  }}
+  else{
+    if(shape_opt=="NULL"){
+      color_obj<-as.integer(annotation[[color_obj]])
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
+    else{
+      color_obj<-as.integer(annotation[[color_obj]])
+      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+      legend_title <- paste0(shape_opt)
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+        geom_point(size =3) +
+        scale_color_gradient(name=color_title)+
+        scale_shape(name=legend_title)+
+        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+        coord_fixed()+
+        labs(title="PCA")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              aspect.ratio = 1,
+              plot.background = element_blank(),
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white", colour = "black"))
+    }
   }
   pca_plot
 }
@@ -1207,7 +1464,7 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
                                      "gelatin_wt",
                                      "gelatin_Cyth2_KO"),shape_opt="Treatment") {
   geneCounts_lfc <- plotCounts(dds_object, gene = gene_symbol, 
-                               intgroup = condition, pc=pc_cond,
+                               color_obj = condition, pc=pc_cond,
                                returnData = TRUE)
   geneCounts_lfc$condition <- annotation[[paste0(condition)]]
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
