@@ -167,10 +167,11 @@ sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.99,
 # PCA of raw, unnormalized counts
 pca_raw <- PCA_rawdata(object=rld,
                        ntop=500, PC_1=1, PC_2=2,
-                       color_obj="merged",
+                       color_obj="PMD",
                        count_mat=count_matrix,
-                       shape_opt="NULL",
-                       discret=F)
+                       shape_opt="Customer ID",
+                       continuous=T,
+                       colour_gradient=c("red","white","blue"))
 pca_raw[1]
 
 # PCA of normalized, variance stabilized counts, you can either set shape_opt="NULL" or 
@@ -178,23 +179,15 @@ pca_raw[1]
 
 pca <- PCA_DEseq2(object=rld, 
                   ntop=500, PC_1=1, PC_2=2,
-                  color_obj="merged",
-                  shape_opt = "NULL",
-                  discret=F)
+                  color_obj="PMD",
+                  shape_opt = "merged",
+                  continuous=T,
+                  colour_gradient=c("red","yellow","blue"))
 pca[1]
 
 ##################################################################
 ##### Display the compensation for known batch effect #####
 ##################################################################
-
-# Using Combat
-
-Combat_batch(object=rld, 
-             batch=annotation$Donor, 
-             shape_opt="Type",
-             ntop=500, PC_1=1, PC_2=2,
-             color_obj="merged",
-             discret=F)
 
 # Display compensation for batch effect using Limma, if no second batch name it "NULL"
 
@@ -202,10 +195,11 @@ Limma_batch(rld_obj=rld,
             object=rld_df, 
             batch_obj=annotation$PMD,
             batch2_obj=NULL,
-            shape_opt="NULL",
+            shape_opt="merged",
             ntop=500, PC_1=1, PC_2=2,
-            color_obj="merged",
-            discret=F)
+            color_obj="PMD",
+            continuous=T,
+            colour_gradient=c("blue","green","red"))
 
 
 ###############################################################################
@@ -253,10 +247,11 @@ annotation$SV7 <- svseq_NULL$sv[,7]
 Limma_batch_sva(rld_obj=rld,
             object=rld_df, 
             batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
-            shape_opt="NULL",
+            shape_opt="Customer ID",
             ntop=500, PC_1=1, PC_2=2,
-            color_obj="merged",
-            discret=F)
+            color_obj="PMD",
+            continuous=T,
+            colour_gradient=c("red","green","blue"))
 
 ##### SVA into design formula ####
 
