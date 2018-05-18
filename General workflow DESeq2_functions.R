@@ -960,8 +960,7 @@ setClass(Class = "DESeq2_analysis_object",
          slots = c(parameters="list", results="list", DE_genes="list", Number_DE_genes="data.frame"))
 
 Dea_analysis <- function(dds_object=dds, 
-                         condi=annotation$condition, 
-                         IHW_option=F,alpha_option=0.1, 
+                         IHW_option=F,alpha_option=0.05, 
                          lfc_Threshold=0, control="unstimulated", 
                          condition="condition",
                          design_parameter=design){
