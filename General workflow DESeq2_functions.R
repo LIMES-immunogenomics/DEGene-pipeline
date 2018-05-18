@@ -636,7 +636,7 @@ Limma_batch_sva <- function(rld_obj=rld,
 setClass(Class = "DESeq2_analysis_object",
          slots = c(parameters="list", results="list", DE_genes="list", Number_DE_genes="data.frame"))
 
-Dea_analysis <- function(dds_object=dds, condi=annotation$condition, IHW_option=F,alpha_option=0.1, lfc_Threshold=0, control="unstimulated", condition="condition"){
+Dea_analysis <- function(dds_object=dds, IHW_option=F,alpha_option=0.05, lfc_Threshold=0, control="unstimulated", condition="condition"){
   DE_object <- new(Class = "DESeq2_analysis_object")
   # Define parameters
   DE_object@parameters <- c(dds_object,IHW_option, alpha_option, lfc_Threshold, control, condition)
