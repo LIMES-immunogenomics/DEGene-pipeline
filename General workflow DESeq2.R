@@ -121,11 +121,13 @@ normalized_counts <- counts(dds, normalized=T)
 # The +1 pseudocount step is neccessary so the value that fall below 0 due to the 
 # multiplication with the sij, type in anything in scaling option and you will get 
 # untransformed counts
+# if you did not define colors in the beginning just type in NULL for anno_color
+# enter the condition of the samples you want to be displayed in different colors
 
 Checking_normalized_counts(raw_data=count_matrix, 
                            normalized_source=dds, 
                            scaling_opt="NULL",
-                           anno_colour=anno,
+                           anno_colour=NULL,
                            condition="merged")
 
 
@@ -163,6 +165,7 @@ sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.99,
 # Since PCA can be slightly problematic with high dimensional data, 
 # we first select only the 500 genes showing the highest variance. 
 # The principal components to be ploted can be defined by PC_1 & PC_2
+# if you have a continuous variable for the colour, change continuous to T
 
 # PCA of raw, unnormalized counts
 pca_raw <- PCA_rawdata(object=rld,
@@ -193,12 +196,12 @@ pca[1]
 
 Limma_batch(rld_obj=rld,
             object=rld_df, 
-            batch_obj=annotation$PMD,
+            batch_obj=annotation$`Customer ID`,
             batch2_obj=NULL,
-            shape_opt="merged",
+            shape_opt="NULL",
             ntop=500, PC_1=1, PC_2=2,
-            color_obj="PMD",
-            continuous=T,
+            color_obj="merged",
+            continuous=F,
             colour_gradient=c("blue","green","red"))
 
 
@@ -247,10 +250,10 @@ annotation$SV7 <- svseq_NULL$sv[,7]
 Limma_batch_sva(rld_obj=rld,
                 object=rld_df, 
                 batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
-                shape_opt="Customer ID",
+                shape_opt="NULL",
                 ntop=500, PC_1=1, PC_2=2,
-                color_obj="PMD",
-                continuous=T,
+                color_obj="merged",
+                continuous=F,
                 colour_gradient=c("red","green","blue"))
 
 ##### SVA into design formula ####
