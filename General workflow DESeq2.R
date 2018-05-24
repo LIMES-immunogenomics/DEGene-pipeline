@@ -1,11 +1,11 @@
 ##### Final general workflow DESeq2  #### 
 
 ###### General workflow analysing RNA-seq data using DESeq2 ######
-setwd("E:/Nico/Shiny App/MS project")
+setwd("E:/Nico/GitHub-Deseq2")
 
 ##### Install & load required packages ####
 ##### Installation
-source("General workflow DESeq2_functions.R")
+source("DESeq2 Edition_2_functions.R")
 
 
 ##### Annotation file #####
@@ -25,8 +25,8 @@ str(annotation)
 
 ##### Define the colours of your conditions #####
 anno <- c(CON_GM="#B1BBCF",
-  CON_WM="#757575",
-  MS_GM="#0288D1",MS_WM="#F44336")
+          CON_WM="#757575",
+          MS_GM="#0288D1",MS_WM="#F44336")
 
 anno_batch <- c(AB="#0288D1",CB="#F44336")
 
@@ -169,7 +169,7 @@ pca_raw <- PCA_rawdata(object=rld,
                        ntop=500, PC_1=1, PC_2=2,
                        color_obj="PMD",
                        count_mat=count_matrix,
-                       shape_opt="Customer ID",
+                       shape_opt="type",
                        continuous=T,
                        colour_gradient=c("red","white","blue"))
 pca_raw[1]
@@ -245,13 +245,13 @@ annotation$SV7 <- svseq_NULL$sv[,7]
 ##### Check on a PCA what influence the SVA has on the clustering of the samples ####
 
 Limma_batch_sva(rld_obj=rld,
-            object=rld_df, 
-            batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
-            shape_opt="Customer ID",
-            ntop=500, PC_1=1, PC_2=2,
-            color_obj="PMD",
-            continuous=T,
-            colour_gradient=c("red","green","blue"))
+                object=rld_df, 
+                batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
+                shape_opt="Customer ID",
+                ntop=500, PC_1=1, PC_2=2,
+                color_obj="PMD",
+                continuous=T,
+                colour_gradient=c("red","green","blue"))
 
 ##### SVA into design formula ####
 
@@ -301,28 +301,30 @@ dds <- dds[which(mcols(dds)$betaConv),]
 # control: here you can enter all the conditions that you want to compare the other groups against
 # (or just one if you like...)
 
-DE_object <- Dea_analysis(dds_object=dds, 
-                          IHW_option=T,
+
+DE_object <- Dea_analysis(annotation_file=annotation,
+                          count_matrix_file=count_matrix,
+                          IHW_option=F,
                           alpha_option=0.05, 
-                          lfc_Threshold=0.58, 
-                          control=list("CON_GM","CON_WM"),
+                          lfc_Threshold=0, 
+                          control=list("CON_GM","CON_WM"), 
                           condition="merged",
-                          design_parameter=design)
+                          design_variable=design)
 
 names(DE_object$CON_GM@results)
 ##### Get shrunken lfc object as data frame ####
 
-list_df <- df_function(results_obj=DE_object$CON_GM@results)
+list_df_CON_GM <- df_function(results_obj=DE_object$CON_GM@results)
 
 ##### MA-plot #####
 
-df_names <- names(list_df)
+df_names_CON_GM <- names(list_df)
 
 ### Either enter a name of a specific condition e.g.: fibronectin_df from the list_df here 
 ### or just type MA_function(condi=NULL) for multiplot of all conditions, 
 # missing p values (NA) will not be displayed
 
-MA_function(condition=NULL, DE_obj = DE_object$CON_GM,y_lim=c(-5,5))
+MA_function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_object$CON_GM, y_lim=c(-10,10))
 
 
 #####p value distribution #####
@@ -334,7 +336,7 @@ MA_function(condition=NULL, DE_obj = DE_object$CON_GM,y_lim=c(-5,5))
 # of 1 correspond to genes in the span between +LFC threshold 
 # and -LFC threshold, thus non-DEG
 
-plot_pval(condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object$CON_GM)
+plot_pval(df_names=df_names_CON_GM,condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object$CON_GM)
 
 ##### Plot up- & downregulated DE genes for all conditions ####
 
@@ -534,12 +536,12 @@ rld_df<-as.data.frame(assay(rld))
 # Will display and cluster a gene list and its samples
 # if you have no second annotation, just add second_annotation=NULL
 Clustering_all_DEgenes_output <- Cluster_genelist_output(object=rld, dds_obj=dds, 
-                                                 heatmap_title="All DE genes",
-                                                 first_annotation="Treatment",
-                                                 second_annotation="Type",
-                                                 anno_color=list(Treatment=anno,Type=anno_batch), 
-                                                 gene_list=all_DE_genes,
-                                                 display_row=F)
+                                                         heatmap_title="All DE genes",
+                                                         first_annotation="Treatment",
+                                                         second_annotation="Type",
+                                                         anno_color=list(Treatment=anno,Type=anno_batch), 
+                                                         gene_list=all_DE_genes,
+                                                         display_row=F)
 
 # Only cluster the top 1000 varying gene
 Cluster_top1000 <- cluster_Top_genes_output(object=rld, dds_obj=dds, 
@@ -560,16 +562,16 @@ Cluster_top1000 <- cluster_Top_genes_output(object=rld, dds_obj=dds,
 
 # Plot all DE genes
 GO_all <- plot_enrichGO(upreg_genes_list=AB_H1N1_up,
-                     downreg_genes_list=AB_H1N1_down, 
-                     downreg_title="GO BP downregulated all DEG", 
+                        downreg_genes_list=AB_H1N1_down, 
+                        downreg_title="GO BP downregulated all DEG", 
                         upreg_title="GO BP upregulated all DEG", 
-                     nr_of_BPs_to_plot=20,
-                     minGSSize_no = 10,
-                     maxGSSize_no = 500,
-                     keytype_opt="SYMBOL",
-                     pvalueCutoff_opt=0.05,
-                     ontology="BP",
-                     organism="org.Hs.eg.db")
+                        nr_of_BPs_to_plot=20,
+                        minGSSize_no = 10,
+                        maxGSSize_no = 500,
+                        keytype_opt="SYMBOL",
+                        pvalueCutoff_opt=0.05,
+                        ontology="BP",
+                        organism="org.Hs.eg.db")
 
 ##### Return GO analysis as table #####
 
@@ -661,4 +663,3 @@ colnames(GOI_padj_table) <- c("CpG","LPS_IFNg", "PolyI:C")
 rownames(GOI_padj_table) <- GOI
 
 write.csv(GOI_padj_table, "Adjusted p values of GOI.csv")
-
