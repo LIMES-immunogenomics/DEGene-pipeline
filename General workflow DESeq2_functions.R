@@ -47,54 +47,54 @@ Checking_normalized_counts <- function(raw_data=count_matrix,
                                        condition=condition){
   if(scaling_opt=="log2"){ 
     dat <- stack(as.data.frame(log2(raw_data+1)))
-  colnames(dat) <- c("Reads", "Sample")
-  dat$new <- annotation[[paste0(condition)]][dat$Sample]
-  legend_title=paste0(condition)
-  raw_counts_log2_boxplots <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
-    geom_boxplot()+
-    labs(title="Unnormalized reads")+
-    ylab("Reads (log2)")+
-    scale_fill_manual(values=anno_colour,name=legend_title)+
-    theme(panel.background = element_rect(fill=NA, color = "black"),
-          plot.background = element_blank(),
-          aspect.ratio = 0.5,
-          legend.background = element_blank(),
-          plot.title = element_text(face = "bold", hjust = 0.5),
-          strip.background = element_rect(fill = NA, color = "black"),
-          axis.text.x = element_text(angle = 90, vjust=0.5),
-          axis.line = element_line(colour = "black", size = 1),
-          axis.text = element_text(colour = "black", size = 10, face = "bold"),
-          axis.ticks = element_line(color = "black",size = 1),
-          axis.title = element_text(colour = "black", size = 10, face = "bold"),
-          axis.title.x = element_blank(),
-          legend.key = element_rect(fill = "white"))
-  
-  
-  normalized_data <- stack(as.data.frame(log2(counts(normalized_source, normalized=T)+1)))
-  normalized_data$values <- as.integer(normalized_data$values)
-  colnames(normalized_data) <- c("Reads", "Sample")
-  normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
-  legend_title=paste0(condition)
-  normalized_counts_log2_boxplots <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
-    geom_boxplot()+
-    labs(title="Normalized reads")+
-    scale_fill_manual(values=anno_colour,name=legend_title)+
-    ylab("Reads (log2)")+
-    theme(panel.background = element_rect(fill=NA, color = "black"),
-          plot.background = element_blank(),
-          aspect.ratio = 0.5,
-          legend.background = element_blank(),
-          plot.title = element_text(face = "bold", hjust = 0.5),
-          strip.background = element_rect(fill = NA, color = "black"),
-          axis.text.x = element_text(angle = 90, vjust=0.5),
-          axis.line = element_line(colour = "black", size = 1),
-          axis.text = element_text(colour = "black", size = 10, face = "bold"),
-          axis.ticks = element_line(color = "black",size = 1),
-          axis.title.x = element_blank(),
-          axis.title = element_text(colour = "black", size = 10, face = "bold"),
-          legend.key = element_rect(fill = "white"))
-  
-  multiplot(raw_counts_log2_boxplots, normalized_counts_log2_boxplots, cols=2)
+    colnames(dat) <- c("Reads", "Sample")
+    dat$new <- annotation[[paste0(condition)]][dat$Sample]
+    legend_title=paste0(condition)
+    raw_counts_log2_boxplots <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
+      geom_boxplot()+
+      labs(title="Unnormalized reads")+
+      ylab("Reads (log2)")+
+      scale_fill_manual(values=anno_colour,name=legend_title)+
+      theme(panel.background = element_rect(fill=NA, color = "black"),
+            plot.background = element_blank(),
+            aspect.ratio = 0.5,
+            legend.background = element_blank(),
+            plot.title = element_text(face = "bold", hjust = 0.5),
+            strip.background = element_rect(fill = NA, color = "black"),
+            axis.text.x = element_text(angle = 90, vjust=0.5),
+            axis.line = element_line(colour = "black", size = 1),
+            axis.text = element_text(colour = "black", size = 10, face = "bold"),
+            axis.ticks = element_line(color = "black",size = 1),
+            axis.title = element_text(colour = "black", size = 10, face = "bold"),
+            axis.title.x = element_blank(),
+            legend.key = element_rect(fill = "white"))
+    
+    
+    normalized_data <- stack(as.data.frame(log2(counts(normalized_source, normalized=T)+1)))
+    normalized_data$values <- as.integer(normalized_data$values)
+    colnames(normalized_data) <- c("Reads", "Sample")
+    normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
+    legend_title=paste0(condition)
+    normalized_counts_log2_boxplots <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
+      geom_boxplot()+
+      labs(title="Normalized reads")+
+      scale_fill_manual(values=anno_colour,name=legend_title)+
+      ylab("Reads (log2)")+
+      theme(panel.background = element_rect(fill=NA, color = "black"),
+            plot.background = element_blank(),
+            aspect.ratio = 0.5,
+            legend.background = element_blank(),
+            plot.title = element_text(face = "bold", hjust = 0.5),
+            strip.background = element_rect(fill = NA, color = "black"),
+            axis.text.x = element_text(angle = 90, vjust=0.5),
+            axis.line = element_line(colour = "black", size = 1),
+            axis.text = element_text(colour = "black", size = 10, face = "bold"),
+            axis.ticks = element_line(color = "black",size = 1),
+            axis.title.x = element_blank(),
+            axis.title = element_text(colour = "black", size = 10, face = "bold"),
+            legend.key = element_rect(fill = "white"))
+    
+    multiplot(raw_counts_log2_boxplots, normalized_counts_log2_boxplots, cols=2)
   }
   else{
     # using untransformed data to plot
@@ -153,7 +153,7 @@ Var_stab<- function(deseq_count_matrix=dsfm, blind_param=T, count_mat=count_matr
     rld<-rlog(deseq_count_matrix, blind=blind_param)
   }
   else{
-    vsd <- vst(deseq_count_matrix, blind = blind_param)
+    vst <- vst(deseq_count_matrix, blind = blind_param)
   }
 }
 
@@ -253,57 +253,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
   percentVar <- round(100 * attr(pcaData, "percentVar"))
   color_title<-paste0(color_obj)
   if (continuous==F){
-  if(shape_opt=="NULL"){
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-      geom_point(size =3) +
-      scale_color_discrete(name=color_title)+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-  }
-  else{
-    if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-    pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-    legend_title <- paste0(shape_opt)
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-      geom_point(size =3) +
-      scale_color_discrete(name=color_title)+
-      scale_shape(name=legend_title)+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-    }
-    else{
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+    if(shape_opt=="NULL"){
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
         geom_point(size =3) +
         scale_color_discrete(name=color_title)+
-        scale_shape_manual(values=df$x,name=legend_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
         coord_fixed()+
@@ -319,9 +272,56 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
               axis.ticks = element_line(color = "black",size = 1),
               axis.title = element_text(colour = "black", size = 10, face = "bold"),
               legend.key = element_rect(fill = "white", colour = "black"))
-      
     }
-      }}
+    else{
+      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete(name=color_title)+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+      }
+      else{
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete(name=color_title)+
+          scale_shape_manual(values=df$x,name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+        
+      }
+    }}
   else{
     color_obj<-as.integer(annotation[[paste0(color_obj)]])
     if(shape_opt=="NULL"){
@@ -346,27 +346,27 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
     }
     else{
       if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-        geom_point(size =3) +
-        scale_color_gradientn(colours = colour_gradient,name=color_title)+
-        scale_shape(name=legend_title)+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+          geom_point(size =3) +
+          scale_color_gradientn(colours = colour_gradient,name=color_title)+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
@@ -444,57 +444,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
   percentVar <- round(100 * attr(pcaData, "percentVar"))
   color_title<-paste0(color_obj)
   if(continuous ==F){
-  if(shape_opt=="NULL"){
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-      geom_point(size =3) +
-      scale_color_discrete()+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-  }
-  else{
-    if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-    pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-    legend_title <- paste0(shape_opt)
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-      geom_point(size =3) +
-      scale_color_discrete()+
-      scale_shape(name=legend_title)+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-    }
-    else{
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+    if(shape_opt=="NULL"){
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
         geom_point(size =3) +
         scale_color_discrete()+
-        scale_shape_manual(values=df$x,name=legend_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
         coord_fixed()+
@@ -510,11 +463,58 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
               axis.ticks = element_line(color = "black",size = 1),
               axis.title = element_text(colour = "black", size = 10, face = "bold"),
               legend.key = element_rect(fill = "white", colour = "black"))
-      
-    }}}
+    }
+    else{
+      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete()+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+      }
+      else{
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete()+
+          scale_shape_manual(values=df$x,name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+        
+      }}}
   else{
     if(shape_opt=="NULL"){
-          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      color_obj<-as.integer(annotation[[paste0(color_obj)]])
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
         geom_point(size =3) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
@@ -536,28 +536,28 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
     }
     else{
       if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-          color_obj<-as.integer(annotation[[paste0(color_obj)]])
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-        geom_point(size =3) +
-        scale_color_gradientn(colours = colour_gradient,name=color_title)+
-        scale_shape(name=legend_title)+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
+        color_obj<-as.integer(annotation[[paste0(color_obj)]])
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+          geom_point(size =3) +
+          scale_color_gradientn(colours = colour_gradient,name=color_title)+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
         color_obj<-as.integer(annotation[[paste0(color_obj)]])
@@ -631,57 +631,10 @@ Limma_batch <- function(rld_obj=rld,
   
   #plot PCA
   if(continuous ==F){
-  if(shape_opt=="NULL"){
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-      geom_point(size =3) +
-      scale_color_discrete()+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-  }
-  else{
-    if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-    pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-    legend_title <- paste0(shape_opt)
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-      geom_point(size =3) +
-      scale_color_discrete()+
-      scale_shape(name=legend_title)+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-  }
-    else{
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+    if(shape_opt=="NULL"){
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
         geom_point(size =3) +
         scale_color_discrete()+
-        scale_shape_manual(values=df$x,name=legend_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
         coord_fixed()+
@@ -697,11 +650,58 @@ Limma_batch <- function(rld_obj=rld,
               axis.ticks = element_line(color = "black",size = 1),
               axis.title = element_text(colour = "black", size = 10, face = "bold"),
               legend.key = element_rect(fill = "white", colour = "black"))
-      
-    }}}
+    }
+    else{
+      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete()+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+      }
+      else{
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete()+
+          scale_shape_manual(values=df$x,name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+        
+      }}}
   else{
     if(shape_opt=="NULL"){
-          color_obj<-as.integer(annotation[[paste0(color_obj)]])
+      color_obj<-as.integer(annotation[[paste0(color_obj)]])
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
         geom_point(size =3) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
@@ -723,28 +723,28 @@ Limma_batch <- function(rld_obj=rld,
     }
     else{
       if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-          color_obj<-as.integer(annotation[[paste0(color_obj)]])
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-        geom_point(size =3) +
-        scale_color_gradientn(colours = colour_gradient,name=color_title)+
-        scale_shape(name=legend_title)+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
+        color_obj<-as.integer(annotation[[paste0(color_obj)]])
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+          geom_point(size =3) +
+          scale_color_gradientn(colours = colour_gradient,name=color_title)+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
         color_obj<-as.integer(annotation[[paste0(color_obj)]])
@@ -775,25 +775,25 @@ Limma_batch <- function(rld_obj=rld,
   pca_plot
 }
 Limma_batch_sva <- function(rld_obj=rld,
-                        object=rld_df, 
-                        batch_obj=annotation$Sex,
-                        shape_opt="Sex",
-                        ntop=500, PC_1=1, PC_2=2,
-                        color_obj="Treatment",
-                        continuous=F,
-                        colour_gradient=c("red","blue")){
+                            object=rld_df, 
+                            batch_obj=annotation$Sex,
+                            shape_opt="Sex",
+                            ntop=500, PC_1=1, PC_2=2,
+                            color_obj="Treatment",
+                            continuous=F,
+                            colour_gradient=c("red","blue")){
   
   removedbatch_rld <- removeBatchEffect(x=as.matrix(assay(rld)),covariates = batch_obj,design = model.matrix(~annotation$merged))
   if(ntop=="all"){
     pca <- prcomp(t(removedbatch_rld)) 
   }
   else{
-  # select the ntop genes by variance
-  rv <- rowVars(assay(rld_obj))
-  
-  select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  
-  pca <- prcomp(t(removedbatch_rld[select,]))
+    # select the ntop genes by variance
+    rv <- rowVars(assay(rld_obj))
+    
+    select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
+    
+    pca <- prcomp(t(removedbatch_rld[select,]))
   }
   percentVar <- pca$sdev^2 / sum( pca$sdev^2 )
   
@@ -812,57 +812,10 @@ Limma_batch_sva <- function(rld_obj=rld,
   
   #plot PCA
   if(continuous ==F){
-  if(shape_opt=="NULL"){
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-      geom_point(size =3) +
-      scale_color_discrete()+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-  }
-  else{
-    if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-    pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-    legend_title <- paste0(shape_opt)
-    pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-      geom_point(size =3) +
-      scale_color_discrete()+
-      scale_shape(name=legend_title)+
-      xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-      ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-      coord_fixed()+
-      labs(title="PCA")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            aspect.ratio = 1,
-            plot.background = element_blank(),
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white", colour = "black"))
-    }
-    else{
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+    if(shape_opt=="NULL"){
+      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
         geom_point(size =3) +
         scale_color_discrete()+
-        scale_shape_manual(values=df$x,name=legend_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
         coord_fixed()+
@@ -878,8 +831,55 @@ Limma_batch_sva <- function(rld_obj=rld,
               axis.ticks = element_line(color = "black",size = 1),
               axis.title = element_text(colour = "black", size = 10, face = "bold"),
               legend.key = element_rect(fill = "white", colour = "black"))
-      
-    }}}
+    }
+    else{
+      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete()+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+      }
+      else{
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+          geom_point(size =3) +
+          scale_color_discrete()+
+          scale_shape_manual(values=df$x,name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
+        
+      }}}
   else{
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[color_obj]])
@@ -904,28 +904,28 @@ Limma_batch_sva <- function(rld_obj=rld,
     }
     else{
       if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-      color_obj<-as.integer(annotation[[color_obj]])
-      pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-      legend_title <- paste0(shape_opt)
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-        geom_point(size =3) +
-        scale_color_gradientn(colours = colour_gradient,name=color_title)+
-        scale_shape(name=legend_title)+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
+        color_obj<-as.integer(annotation[[color_obj]])
+        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+        legend_title <- paste0(shape_opt)
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
+          geom_point(size =3) +
+          scale_color_gradientn(colours = colour_gradient,name=color_title)+
+          scale_shape(name=legend_title)+
+          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+          coord_fixed()+
+          labs(title="PCA")+
+          theme(panel.background = element_rect(fill=NA, color = "black"),
+                aspect.ratio = 1,
+                plot.background = element_blank(),
+                legend.background = element_blank(),
+                plot.title = element_text(face = "bold", hjust = 0.5),
+                strip.background = element_rect(fill = NA, color = "black"),
+                axis.line = element_line(colour = "black", size = 1),
+                axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                axis.ticks = element_line(color = "black",size = 1),
+                axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
         color_obj<-as.integer(annotation[[color_obj]])
@@ -950,7 +950,7 @@ Limma_batch_sva <- function(rld_obj=rld,
                 axis.ticks = element_line(color = "black",size = 1),
                 axis.title = element_text(colour = "black", size = 10, face = "bold"),
                 legend.key = element_rect(fill = "white", colour = "black"))
-      
+        
       }}
   }
   pca_plot
@@ -958,91 +958,99 @@ Limma_batch_sva <- function(rld_obj=rld,
 
 setClass(Class = "DESeq2_analysis_object",
          slots = c(parameters="list", results="list", DE_genes="list", Number_DE_genes="data.frame"))
-
-Dea_analysis <- function(dds_object=dds, 
-                         IHW_option=F,alpha_option=0.05, 
-                         lfc_Threshold=0, control="unstimulated", 
-                         condition="condition",
-                         design_parameter=design){
-  list_controls <- list()
-  list_controls <- control
-  cond_list <- list()
-  list_conditions<-list()
-  list_DE_genes <- list()
-  list_DE_sum <- list()
-  list_test_all <- list()
-  list_DE_genes_names <- list()
+Dea_analysis <- function(annotation_file=annotation,
+                         count_matrix_file=count_matrix,
+                         IHW_option=F,
+                         alpha_option=0.05, 
+                         lfc_Threshold=0, 
+                         control=list("CON_GM","CON_WM"), 
+                         condition="merged",
+                         design_variable=design){
   DE_objects <- list()
   
-  for (i in list_controls){
-  DE_object <- new(Class = "DESeq2_analysis_object")
+  for(j in control){
+    cond_list <- list()
+    list_conditions<-list()
+    list_DE_genes <- list()
+    list_DE_sum <- list()
+    list_test_all <- list()
+    list_DE_genes_names <- list()
+    control_list<-list()
+    #creat DE_object
+    DE_object <- new(Class = "DESeq2_analysis_object")
+    # Define parameters
+    
+    # relevel condition column to have control as place number one in the levels
+    anno_DE_obj<-annotation_file
+    relevel(anno_DE_obj[[condition]], ref=j)
+    # create new DESeqDataSet
+    dsfm <- DESeqDataSetFromMatrix(countData = count_matrix_file,
+                                   colData = anno_DE_obj,
+                                   design = design_variable )
+    # Run DESeq function
+    dds <- DESeq(dsfm)
+    DE_object@parameters <- list(dds,IHW_option, alpha_option, lfc_Threshold, j, condition)
+    
+    #Define the levels that should be compared against the control
+    cond_list <- levels(anno_DE_obj[[condition]])
+    cond_list<-cond_list[cond_list != j]
+  # Define parameters
   # Create results table as data.frame
   
-  # Define the condition you want to compare everything to
-  annotation[[condition]]<-relevel(annotation[[condition]], ref=paste0(i))
-  dsfm <- DESeqDataSetFromMatrix(countData = count_matrix,
-                                 colData = annotation,
-                                 design = design_parameter )
-  dds <- DESeq(dsfm)
-  dds <- dds[which(mcols(dds)$betaConv),]
-  cond_list<- levels(annotation[[condition]])[-1]
-  # Define parameters
-  DE_object@parameters <- c(dds,IHW_option, alpha_option, lfc_Threshold, i, condition)
-  for (j in cond_list){
+  for (i in cond_list){
     if (IHW_option==T) {
-      res_deseq_lfc <- results(dds,contrast = c(condition, j, i),
+      res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
                                lfcThreshold = lfc_Threshold,
                                alpha = alpha_option,
                                filterFun = ihw,
                                altHypothesis = "greaterAbs")
-      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, j, i),
+      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
                                  res=res_deseq_lfc)
       res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-      list_conditions[[paste(j)]] <- assign(  paste(j), res_deseq_lfc )
+      list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
     }
     if (IHW_option==F) {
-      res_deseq_lfc <- results(dds,contrast = c(condition, j, i),
+      res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
                                lfcThreshold = lfc_Threshold,
                                alpha = alpha_option,
                                altHypothesis = "greaterAbs")
-      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, j, i),
+      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
                                  res=res_deseq_lfc)
       res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-      list_conditions[[paste(j)]] <- assign(  paste(j), res_deseq_lfc )
+      list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
     } 
-  }
   DE_object@results <- list_conditions
-  for (j in cond_list){
-      list_DE_genes <- list(rownames(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
-                                                                   list_conditions[[paste(j)]]$padj<alpha_option&
-                                                                   list_conditions[[paste(j)]]$log2FoldChange>lfc_Threshold,]),
-                            rownames(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
-                                                                   list_conditions[[paste(j)]]$padj<alpha_option&
-                                                                   list_conditions[[paste(j)]]$log2FoldChange<(-lfc_Threshold),]))
-      names(list_DE_genes) = c(paste("up-regulated genes"), 
-                               paste("down-regulated genes"))
-      list_DE_genes_names[[paste(j)]] <- assign(  paste(j), list_DE_genes )
-      list_DE_sum <- list(nrow(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
-                                                             list_conditions[[paste(j)]]$padj<alpha_option&
-                                                             list_conditions[[paste(j)]]$log2FoldChange>lfc_Threshold,]) ,
-                          nrow(list_conditions[[paste(j)]][!is.na(list_conditions[[paste(j)]]$padj)&
-                                                             list_conditions[[paste(j)]]$padj<alpha_option&
-                                                             list_conditions[[paste(j)]]$log2FoldChange<(-lfc_Threshold),]))
-      df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
-                                row.names = c(paste("up-regulated padj. <", alpha_option, sep = "_"), 
-                                              paste("down-regulated padj. <", alpha_option, sep = "_")))
-      list_test_all[[paste(j)]] <- assign(  paste(j), df_DE_genes )
-    }
+    list_DE_genes <- list(rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                                 list_conditions[[paste(i)]]$padj<alpha_option&
+                                                                 list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]),
+                          rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                                 list_conditions[[paste(i)]]$padj<alpha_option&
+                                                                 list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+    names(list_DE_genes) = c(paste("up-regulated genes"), 
+                             paste("down-regulated genes"))
+    list_DE_genes_names[[paste(i)]] <- assign(  paste(i), list_DE_genes )
+    list_DE_sum <- list(nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                           list_conditions[[paste(i)]]$padj<alpha_option&
+                                                           list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]) ,
+                        nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                           list_conditions[[paste(i)]]$padj<alpha_option&
+                                                           list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+    df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
+                              row.names = c(paste("up-regulated padj. <", alpha_option, sep = "_"), 
+                                            paste("down-regulated padj. <", alpha_option, sep = "_")))
+    list_test_all[[paste(i)]] <- assign(  paste(i), df_DE_genes )
+  }
   df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
                             row.names = c(paste("up-regulated padj. <", alpha_option, sep = " "), 
                                           paste("down-regulated padj. <", alpha_option, sep = " ")))
   DE_object@DE_genes <- list_DE_genes_names
   df <- do.call("cbind", list_test_all)
-  colnames(df) <- levels(annotation[[condition]])[-1]
+  colnames(df) <- levels(anno_DE_obj[[condition]])[-1]
   DE_object@Number_DE_genes <- df
-  DE_objects[[paste(i)]] <- assign(  paste(i), DE_object )}
+  DE_objects[[paste(j)]] <- assign(  paste(j), DE_object)}
   return(DE_objects)
 }
+
 multiplot<-function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   
@@ -1081,20 +1089,20 @@ multiplot<-function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 df_function <- function(results_obj=DE_object_01@results){
   list_df<- list()
   for (j in names(results_obj)){
-  res_df <- results_obj[[j]]
-  res_df <- assign(  paste(j, sep = ""),res_df)
-  list_df[[paste(j)]] <- res_df
+    res_df <- results_obj[[j]]
+    res_df <- assign(  paste(j, sep = ""),res_df)
+    list_df[[paste(j)]] <- res_df
   }
   list_df
-  }
-MA_function <- function(condition=NULL, DE_obj=DE_object, y_lim=c(-10,10)){
+}
+MA_function <- function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_object, y_lim=c(-10,10)){
   list_store <- list()
   if(!is.null(condition)){ multi_plot =F} else {multi_plot=T}
   plot_MA <- function(condition, lfc_shrinkage=T){
     label <- as.character(condition)
-     
-      main_name = paste(label," vs ", DE_obj@parameters[[5]])
-      ylab_name = "MAP log2 fold change"
+    
+    main_name = paste(label," vs ", DE_obj@parameters[[5]])
+    ylab_name = "MAP log2 fold change"
     
     # get shrunken lfc object as data frame
     res_deseq_lfc_df <- as.data.frame(list_df[[condition]])
@@ -1109,7 +1117,7 @@ MA_function <- function(condition=NULL, DE_obj=DE_object, y_lim=c(-10,10)){
       ylim(y_lim) + ylab(ylab_name) + 
       theme_bw() +
       labs(title = main_name, color="Significance") +
-      scale_x_discret("Mean expression", trans = "log10",breaks=c(1,10, 100,1000,10000,100000)) +
+      scale_x_log10("Mean expression",breaks=c(1,10, 100,1000,10000,100000)) +
       scale_colour_manual(labels = c(paste0("padj > ",DE_obj@parameters[[3]]), paste0("padj < ",DE_obj@parameters[[3]])),
                           values = c("#2B2D42","#6E0B21", "#7A7D7F"))
   }
@@ -1125,7 +1133,7 @@ MA_function <- function(condition=NULL, DE_obj=DE_object, y_lim=c(-10,10)){
   }
 }
 
-plot_pval <- function(condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object){
+plot_pval <- function(df_names=df_names_CON_GM,condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object){
   list_pval <- list()
   if(!is.null(condition)){ multi_plot =F} else {multi_plot=T}
   histo <- function(condition){
@@ -1133,7 +1141,7 @@ plot_pval <- function(condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object){
     condition <- as.data.frame(list_df[[condition]])
     ggplot(condition, aes(x = pvalue)) + 
       geom_histogram(binwidth = 0.025, boundary = 0)+
-      theme_bw() + labs(title = paste(label,"vs", DE_obj@parameters[[6]],sep=" "))+
+      theme_bw() + labs(title = paste(label,"vs", DE_obj@parameters[[5]],sep=" "))+
       ylab("Frequency") + ylim(ylim_obj)
   }
   if (multi_plot==F){
@@ -1180,8 +1188,8 @@ Volcano_plot <- function(input_file=DE_object, condition="CpG", x_limit=c(-10,10
   ggplot(df, aes(x=df$log2FoldChange, y=df$declogp))+
     geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]) | 
                                df$log2FoldChange>input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]),"red","grey"))+
-    scale_y_discret(expression('-log'['10']*' adjusted p-value'), limits=y_limit)+
-    scale_x_discret(expression('Fold change log'['2']), limits=x_limit)+
+    scale_y_discrete(expression('-log'['10']*' adjusted p-value'), limits=y_limit)+
+    scale_x_discrete(expression('Fold change log'['2']), limits=x_limit)+
     coord_cartesian(xlim = x_limit)+
     labs(title=paste(condition, "VS. ",input_file@parameters[[5]]))+
     theme(panel.background = element_rect(fill=NA, color = "black"),
@@ -1203,8 +1211,8 @@ Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG",
   ggplot(df, aes(x=df$log2FoldChange, y=df$declogp))+
     geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]) | 
                                df$log2FoldChange>input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]),"red","grey"))+
-    scale_y_discret(expression('-log'['10']*' p-value'), limits = y_limit)+
-    scale_x_discret(expression('Fold change log'['2']),limits = x_limit)+
+    scale_y_discrete(expression('-log'['10']*' p-value'), limits = y_limit)+
+    scale_x_discrete(expression('Fold change log'['2']),limits = x_limit)+
     geom_text(data=df[gene,], mapping=aes(x=df[gene,][,"log2FoldChange"], 
                                           y=df[gene,][,"declogp"], 
                                           label=gene),
@@ -1239,20 +1247,20 @@ cluster_Top_genes_output <- function(object=rld, dds_obj=dds, anno_color,
   row.names(df_) <- colnames(object)
   
   map <- pheatmap(assay(object)[select,],
-           cluster_rows=TRUE, cluster_cols=T,
-           clustering_distance_rows="correlation",
-           clustering_distance_cols="correlation",
-           show_rownames=F, show_colnames = TRUE,
-           scale = "row",
-           main = heatmap_title,
-           annotation_col=df_,
-           annotation_colors = anno_color) 
+                  cluster_rows=TRUE, cluster_cols=T,
+                  clustering_distance_rows="correlation",
+                  clustering_distance_cols="correlation",
+                  show_rownames=F, show_colnames = TRUE,
+                  scale = "row",
+                  main = heatmap_title,
+                  annotation_col=df_,
+                  annotation_colors = anno_color) 
   name_output <<- assay(object)[map$tree_row$order,]
 }
 Cluster_genelist_output <-function(object=rld, dds_obj=dds, anno_color,
-                                       first_annotation="condition",
-                                       second_annotation="Sex",
-                                       heatmap_title, gene_list=all_DE_genes,
+                                   first_annotation="condition",
+                                   second_annotation="Sex",
+                                   heatmap_title, gene_list=all_DE_genes,
                                    display_row=F){
   
   df_ <- as.data.frame(colData(dds)[,c(first_annotation,second_annotation)])
@@ -1539,17 +1547,17 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
   geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
   legend_shape<-paste0(shape_opt)
   if (shape_opt=="NULL"){
-  ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-    scale_y_discret(limits = c(0,max(geneCounts_lfc$count))) +  
-    scale_color_manual(values=anno_colour)+
-    geom_beeswarm(cex = 3, na.rm=T)+
-    ylab("Normalized counts")+
-    labs(title=paste0(gene_symbol),colour=condition)+
-    theme_bw()+
-    theme(plot.title = element_text(hjust=0.5))}
+    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
+      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+      scale_color_manual(values=anno_colour)+
+      geom_beeswarm(cex = 3, na.rm=T)+
+      ylab("Normalized counts")+
+      labs(title=paste0(gene_symbol),colour=condition)+
+      theme_bw()+
+      theme(plot.title = element_text(hjust=0.5))}
   else{
     ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-      scale_y_discret(limits = c(0,max(geneCounts_lfc$count))) +  
+      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
       scale_color_manual(values=anno_colour)+
       scale_shape(name=legend_shape)+
       geom_beeswarm(cex = 3, na.rm=T)+
@@ -1566,8 +1574,8 @@ Compare_FC <- function(input_file=DE_object@results, condition1="CpG", condition
   df_cond2 <- df[[condition2]]
   ggplot(df, aes(x=df_cond1, y=df_cond2))+
     geom_point(colour="blue")+
-    scale_x_discret(expression(paste('log'['2']*'fold change', condition1, 'VS control')))+
-    scale_y_discret(expression(paste('log'['2']*'fold change', condition2, 'VS control')))+
+    scale_x_discrete(expression(paste('log'['2']*'fold change', condition1, 'VS control')))+
+    scale_y_discrete(expression(paste('log'['2']*'fold change', condition2, 'VS control')))+
     coord_cartesian()+
     labs(title=paste("FC", condition1, "VS", condition2, sep=" "))+
     theme(panel.background = element_rect(fill=NA, color = "black"),
@@ -1647,4 +1655,3 @@ DE_genes_Top_down <- function(ntop=10, input_file=DE_object$CON_GM,condition="CO
     Top500_DE_genes <- rownames(df[select,])
   }
 }
-
