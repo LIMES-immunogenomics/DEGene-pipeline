@@ -40,11 +40,21 @@ filter_counts <- function(count_mat=count_matrix,
     count_matrix
   }
 }
+
+Var_stab<- function(deseq_count_matrix=dsfm, blind_param=T, count_mat=count_matrix){
+  if(ncol(count_mat)<40){
+    rld<-rlog(deseq_count_matrix, blind=blind_param)
+  }
+  else{
+    vst <- vst(deseq_count_matrix, blind = blind_param)
+  }
+}
 Checking_normalized_counts <- function(raw_data=count_matrix, 
                                        normalized_source=dds, 
                                        scaling_opt="log2",
                                        anno_colour=anno,
                                        condition=condition){
+  if (is.null(anno_colour)==F){
   if(scaling_opt=="log2"){ 
     dat <- stack(as.data.frame(log2(raw_data+1)))
     colnames(dat) <- c("Reads", "Sample")
@@ -148,15 +158,112 @@ Checking_normalized_counts <- function(raw_data=count_matrix,
     
     multiplot(raw_counts_boxplot, normalized_counts_boxplot, cols=2)
   }}
-Var_stab<- function(deseq_count_matrix=dsfm, blind_param=T, count_mat=count_matrix){
-  if(ncol(count_mat)<40){
-    rld<-rlog(deseq_count_matrix, blind=blind_param)
-  }
+  #option if no colors given
   else{
-    vst <- vst(deseq_count_matrix, blind = blind_param)
-  }
-}
-
+    if(scaling_opt=="log2"){ 
+      dat <- stack(as.data.frame(log2(raw_data+1)))
+      colnames(dat) <- c("Reads", "Sample")
+      dat$new <- annotation[[paste0(condition)]][dat$Sample]
+      legend_title=paste0(condition)
+      raw_counts_log2_boxplots <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        labs(title="Unnormalized reads")+
+        ylab("Reads (log2)")+
+        scale_fill_brewer(name=legend_title)+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              axis.title.x = element_blank(),
+              legend.key = element_rect(fill = "white"))
+      
+      
+      normalized_data <- stack(as.data.frame(log2(counts(normalized_source, normalized=T)+1)))
+      normalized_data$values <- as.integer(normalized_data$values)
+      colnames(normalized_data) <- c("Reads", "Sample")
+      normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
+      legend_title=paste0(condition)
+      normalized_counts_log2_boxplots <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        labs(title="Normalized reads")+
+        scale_fill_brewer(name=legend_title)+
+        ylab("Reads (log2)")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title.x = element_blank(),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white"))
+      
+      multiplot(raw_counts_log2_boxplots, normalized_counts_log2_boxplots, cols=2)
+    }
+    else{
+      # using untransformed data to plot
+      dat <- stack(as.data.frame(raw_data+1))
+      colnames(dat) <- c("Reads", "Sample")
+      dat$new <- annotation[[paste0(condition)]][dat$Sample]
+      legend_title=paste0(condition)
+      raw_counts_boxplot <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        scale_y_log10()+
+        labs(title="Unnormalized reads")+
+        scale_fill_brewer(name=legend_title)+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              axis.title.x = element_blank(),
+              legend.key = element_rect(fill = "white"))
+      
+      
+      normalized_data <- stack(as.data.frame(counts(normalized_source, normalized=T)+1))
+      normalized_data$values <- as.integer(normalized_data$values)
+      colnames(normalized_data) <- c("Reads", "Sample")
+      normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
+      legend_title=paste0(condition)
+      normalized_counts_boxplot <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        scale_y_log10()+
+        labs(title="Normalized reads")+
+        scale_fill_brewer(name=legend_title)+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title.x = element_blank(),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white"))
+      
+      multiplot(raw_counts_boxplot, normalized_counts_boxplot, cols=2)
+    }
+  }}
 sample_cor<- function(rld, limit_set = c(0.9,1),midpoint_set = 0.95,condition="Treatment"){
   # melt correlatiopn matrix
   cor_mat<-cor(rld, method = "pearson")
@@ -989,6 +1096,7 @@ Dea_analysis <- function(annotation_file=annotation,
                                    design = design_variable )
     # Run DESeq function
     dds <- DESeq(dsfm)
+    
     DE_object@parameters <- list(dds,IHW_option, alpha_option, lfc_Threshold, j, condition)
     
     #Define the levels that should be compared against the control
