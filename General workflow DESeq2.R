@@ -300,19 +300,22 @@ dds <- dds[which(mcols(dds)$betaConv),]
 # alternative options: independent filtering=TRUE if you set IHW_option=F; 
 # lfcThreshold=0 (no log2 fold change threshold) 
 # pAdjustMethod="BH"; extrem outliers will be marked as "NA"; 
-# condition: the name of the variable from annotation that contains 
+# condition: the name of the variable from annotation that contains the groups you want to compare to each other
 # control: here you can enter all the conditions that you want to compare the other groups against
-# (or just one if you like...)
+# design_variable: here you enter the design formula that defines which batch is compensated for & which groups are compared
+
 
 
 DE_object <- Dea_analysis(annotation_file=annotation,
                           count_matrix_file=count_matrix,
                           IHW_option=F,
                           alpha_option=0.05, 
-                          lfc_Threshold=0, 
+                          lfc_Threshold=0.58, 
                           control=list("CON_GM","CON_WM"), 
                           condition="merged",
                           design_variable=design)
+
+# In the enclosed Powerpoint presentation you may see how this DE_object is build up & how to retrieve data from it
 
 names(DE_object$CON_GM@results)
 ##### Get shrunken lfc object as data frame ####
