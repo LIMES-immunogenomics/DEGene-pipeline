@@ -537,6 +537,10 @@ spec_gel_ko_comp_wt_down <- setdiff(gelatin_Cyth2_KO_genes_less, intersect(gelat
 rld<-Var_stab(dsfm,blind_param = F)
 rld_df<-as.data.frame(assay(rld))
 
+#####################################################################################
+######## Generate a data frame with the batch corrected normalized reads #########
+#####################################################################################
+
 # create a data frame with the batch-corrected values of the expression
 batch_corrected_rld <- removeBatchEffect(x=rld_df,batch = annotation$`Customer ID`,design = model.matrix(~annotation$merged))
 
