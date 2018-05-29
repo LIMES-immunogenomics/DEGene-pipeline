@@ -545,7 +545,7 @@ batch_corrected_rld <- removeBatchEffect(x=rld_df,batch = annotation$`Customer I
 # if you have no second annotation, just add second_annotation=NULL
 # either add rld as input to display the normalized, rlog-transformed data
 # or add batch-corrected_rld as input to display the batch-corrected rlog-transformed data
-Clustering_all_DEgenes_output <- Cluster_genelist_output(object=batch_corrected_rld, dds_obj=dds, 
+Clustering_all_DEgenes_output <- Cluster_genelist_output(object=batch_corrected_rld, dds_obj=DE_object$CON_GM@parameters[[1]], 
                                                          heatmap_title="All DE genes",
                                                          first_annotation="status",
                                                          second_annotation="type",
@@ -554,7 +554,7 @@ Clustering_all_DEgenes_output <- Cluster_genelist_output(object=batch_corrected_
                                                          display_row=F)
 
 # Only cluster the top 1000 varying gene
-Cluster_top1000 <- cluster_Top_genes_output(object=rld_df, dds_obj=dds, 
+Cluster_top1000 <- cluster_Top_genes_output(object=rld_df, dds_obj=DE_object$CON_GM@parameters[[1]], 
                                             heatmap_title="Top 1000 genes", 
                                             ntop=1000,
                                             first_annotation="type",
@@ -602,7 +602,7 @@ Plot_pathway_cluster(gene_list=AB_H1N1_up,
                      first_annotation="Treatment",
                      second_annotation="Type",
                      anno_color=list(Treatment=anno,Type=anno_batch),
-                     object=rld,dds_obj=dds)
+                     object=rld,dds_obj=DE_object$CON_GM@parameters[[1]])
 
 
 ##### KEGG enrichment plot #####
@@ -623,7 +623,7 @@ KEGG_LPS <- plot_KEGG(upreg_genes_list=AB_H1N1_up,
 
 #plots a single gene indicating the normalized counts for all conditions
 
-plot_single_gene(dds_object=dds, gene_symbol="IL6", 
+plot_single_gene(dds_object=DE_object$CON_GM@parameters[[1]], gene_symbol="IL6", 
                  condition="Treatment", pc_cond=F, anno_colour=anno, 
                  order=c("ctl","H1N1"),shape_opt="Type")
 #
