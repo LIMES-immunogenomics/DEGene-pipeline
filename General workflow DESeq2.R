@@ -24,11 +24,10 @@ annotation[] <- lapply(annotation, factor)
 str(annotation)
 
 ##### Define the colours of your conditions #####
-anno <- c(CON_GM="#B1BBCF",
-          CON_WM="#757575",
-          MS_GM="#0288D1",MS_WM="#F44336")
+anno <- c(CON="#B1BBCF",
+          MS="#757575")
 
-anno_batch <- c(AB="#0288D1",CB="#F44336")
+anno_batch <- c(GM="#0288D1",WM="#F44336")
 
 #################################################################################
 ##### Kallisto reads (jump this step if you have a Symbol Gene count table) ##### 
@@ -174,7 +173,8 @@ pca_raw <- PCA_rawdata(object=rld,
                        count_mat=count_matrix,
                        shape_opt="type",
                        continuous=T,
-                       colour_gradient=c("red","white","blue"))
+                       colour_gradient=c("red","white","blue"),
+                       point_size=3)
 pca_raw[1]
 
 # PCA of normalized, variance stabilized counts, you can either set shape_opt="NULL" or 
@@ -185,7 +185,8 @@ pca <- PCA_DEseq2(object=rld,
                   color_obj="PMD",
                   shape_opt = "merged",
                   continuous=T,
-                  colour_gradient=c("red","yellow","blue"))
+                  colour_gradient=c("red","yellow","blue"),
+                  point_size=3)
 pca[1]
 
 ##################################################################
@@ -202,7 +203,8 @@ Limma_batch(rld_obj=rld,
             ntop=500, PC_1=1, PC_2=2,
             color_obj="merged",
             continuous=F,
-            colour_gradient=c("blue","green","red"))
+            colour_gradient=c("blue","green","red"),
+            point_size=3)
 
 
 ###############################################################################
@@ -249,12 +251,14 @@ annotation$SV7 <- svseq_NULL$sv[,7]
 
 Limma_batch_sva(rld_obj=rld,
                 object=rld_df, 
+                condition=annotation$merged,
                 batch_obj=annotation[c("SV1","SV2","SV3","SV4","SV5","SV6","SV7")],
                 shape_opt="NULL",
                 ntop=500, PC_1=1, PC_2=2,
                 color_obj="merged",
                 continuous=F,
-                colour_gradient=c("red","green","blue"))
+                colour_gradient=c("red","green","blue"),
+                point_size=3)
 
 ##### SVA into design formula ####
 
@@ -300,22 +304,19 @@ dds <- dds[which(mcols(dds)$betaConv),]
 # alternative options: independent filtering=TRUE if you set IHW_option=F; 
 # lfcThreshold=0 (no log2 fold change threshold) 
 # pAdjustMethod="BH"; extrem outliers will be marked as "NA"; 
-# condition: the name of the variable from annotation that contains the groups you want to compare to each other
+# condition: the name of the variable from annotation that contains 
 # control: here you can enter all the conditions that you want to compare the other groups against
-# design_variable: here you enter the design formula that defines which batch is compensated for & which groups are compared
-
+# (or just one if you like...)
 
 
 DE_object <- Dea_analysis(annotation_file=annotation,
                           count_matrix_file=count_matrix,
                           IHW_option=F,
                           alpha_option=0.05, 
-                          lfc_Threshold=0.58, 
-                          control=list("CON_GM","CON_WM"), 
+                          lfc_Threshold=0, 
+                          control=list("CON_GM"), 
                           condition="merged",
                           design_variable=design)
-
-# In the enclosed Powerpoint presentation you may see how this DE_object is build up & how to retrieve data from it
 
 names(DE_object$CON_GM@results)
 ##### Get shrunken lfc object as data frame ####
@@ -469,13 +470,11 @@ fibronectin_Cyth2_KO_genes_less <- DE_object@DE_genes$`fibronectin_Cyth2_KO`$`do
 gelatin_wt_genes_less <- DE_object@DE_genes$gelatin_wt$`down-regulated genes`
 gelatin_Cyth2_KO_genes_less <- DE_object@DE_genes$`gelatin_Cyth2_KO`$`down-regulated genes`
 
-all_upreg_genes <- union(fibronectin_Cyth2_KO_genes_great,
-                         union(fibronectin_wt_genes_great,
-                               union(gelatin_wt_genes_great,gelatin_Cyth2_KO_genes_great)))
+all_upreg_genes <- union(DE_object$CON_GM@DE_genes$CON_WM$`up-regulated genes`,
+                         union(DE_object$CON_GM@DE_genes$MS_GM$`up-regulated genes`,DE_object$CON_GM@DE_genes$MS_WM$`up-regulated genes`))
 
-all_downreg_genes <- union(fibronectin_Cyth2_KO_genes_less,
-                           union(fibronectin_wt_genes_less,
-                                 union(gelatin_wt_genes_less,gelatin_Cyth2_KO_genes_less)))
+all_downreg_genes <- union(DE_object$CON_GM@DE_genes$CON_WM$`down-regulated genes`,
+                           union(DE_object$CON_GM@DE_genes$MS_GM$`down-regulated genes`,DE_object$CON_GM@DE_genes$MS_WM$`down-regulated genes`))
 
 all_DE_genes<- union(all_downreg_genes, all_upreg_genes)
 
@@ -538,24 +537,29 @@ spec_gel_ko_comp_wt_down <- setdiff(gelatin_Cyth2_KO_genes_less, intersect(gelat
 rld<-Var_stab(dsfm,blind_param = F)
 rld_df<-as.data.frame(assay(rld))
 
+# create a data frame with the batch-corrected values of the expression
+batch_corrected_rld <- removeBatchEffect(x=rld_df,batch = annotation$`Customer ID`,design = model.matrix(~annotation$merged))
+
 
 # Will display and cluster a gene list and its samples
 # if you have no second annotation, just add second_annotation=NULL
-Clustering_all_DEgenes_output <- Cluster_genelist_output(object=rld, dds_obj=dds, 
+# either add rld as input to display the normalized, rlog-transformed data
+# or add batch-corrected_rld as input to display the batch-corrected rlog-transformed data
+Clustering_all_DEgenes_output <- Cluster_genelist_output(object=batch_corrected_rld, dds_obj=dds, 
                                                          heatmap_title="All DE genes",
-                                                         first_annotation="Treatment",
-                                                         second_annotation="Type",
-                                                         anno_color=list(Treatment=anno,Type=anno_batch), 
+                                                         first_annotation="status",
+                                                         second_annotation="type",
+                                                         anno_color=list(status=anno,type=anno_batch), 
                                                          gene_list=all_DE_genes,
                                                          display_row=F)
 
 # Only cluster the top 1000 varying gene
-Cluster_top1000 <- cluster_Top_genes_output(object=rld, dds_obj=dds, 
+Cluster_top1000 <- cluster_Top_genes_output(object=rld_df, dds_obj=dds, 
                                             heatmap_title="Top 1000 genes", 
                                             ntop=1000,
-                                            first_annotation="Treatment",
-                                            second_annotation="Type",
-                                            anno_color=list(Treatment=anno,Type=anno_batch), 
+                                            first_annotation="type",
+                                            second_annotation="status",
+                                            anno_color=list(type=anno_batch,status=anno), 
                                             gene_list=all_DE_genes)
 
 
