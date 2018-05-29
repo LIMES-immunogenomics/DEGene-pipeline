@@ -317,7 +317,8 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
                        count_mat=count_matrix,
                        shape_opt="NULL",
                        continuous=F,
-                       colour_gradient=c("red","green","blue")){
+                       colour_gradient=c("red","green","blue"),
+                       point_size=3){
   if(ntop=="all"){
     pca <- prcomp(t(log10(as.data.frame(count_mat)+1))) 
   }
@@ -362,7 +363,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
   if (continuous==F){
     if(shape_opt=="NULL"){
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_discrete(name=color_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -385,7 +386,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete(name=color_title)+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -408,7 +409,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete(name=color_title)+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -433,7 +434,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
     color_obj<-as.integer(annotation[[paste0(color_obj)]])
     if(shape_opt=="NULL"){
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -456,7 +457,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -479,7 +480,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -506,10 +507,11 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
 }
 
 PCA_DEseq2 <- function(object=rld, color_obj="condition", 
-                       ntop=500, PC_1=2, PC_2=3,
+                       ntop=500, PC_1=2, PC_2=2,
                        shape_opt = "NULL",
                        continuous=F,
-                       colour_gradient=c("red","green","blue")){
+                       colour_gradient=c("red","green","blue"),
+                       point_size=3){
   if(ntop=="all"){
     pca <- prcomp(t(assay(object))) 
   }
@@ -553,7 +555,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
   if(continuous ==F){
     if(shape_opt=="NULL"){
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_discrete()+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -576,7 +578,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete()+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -599,7 +601,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete()+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -623,7 +625,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[paste0(color_obj)]])
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -647,7 +649,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -671,7 +673,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -705,7 +707,8 @@ Limma_batch <- function(rld_obj=rld,
                         ntop=500, PC_1=1, PC_2=2,
                         color_obj="Treatment",
                         continuous=F,
-                        colour_gradient=c("red","green","blue")){
+                        colour_gradient=c("red","green","blue"),
+                        point_size=3){
   
   removedbatch_rld <- removeBatchEffect(x=object, batch=batch_obj, batch2 = batch2_obj)
   if(ntop=="all"){
@@ -740,7 +743,7 @@ Limma_batch <- function(rld_obj=rld,
   if(continuous ==F){
     if(shape_opt=="NULL"){
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_discrete()+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -763,7 +766,7 @@ Limma_batch <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete()+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -786,7 +789,7 @@ Limma_batch <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete()+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -810,7 +813,7 @@ Limma_batch <- function(rld_obj=rld,
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[paste0(color_obj)]])
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -834,7 +837,7 @@ Limma_batch <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -858,7 +861,7 @@ Limma_batch <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -883,14 +886,16 @@ Limma_batch <- function(rld_obj=rld,
 }
 Limma_batch_sva <- function(rld_obj=rld,
                             object=rld_df, 
+                            condition=annotation$merged,
                             batch_obj=annotation$Sex,
                             shape_opt="Sex",
                             ntop=500, PC_1=1, PC_2=2,
                             color_obj="Treatment",
                             continuous=F,
-                            colour_gradient=c("red","blue")){
+                            colour_gradient=c("red","blue"),
+                            point_size=3){
   
-  removedbatch_rld <- removeBatchEffect(x=as.matrix(assay(rld)),covariates = batch_obj,design = model.matrix(~annotation$merged))
+  removedbatch_rld <- removeBatchEffect(x=as.matrix(assay(rld_obj)),covariates = batch_obj,design = model.matrix(~condition))
   if(ntop=="all"){
     pca <- prcomp(t(removedbatch_rld)) 
   }
@@ -921,7 +926,7 @@ Limma_batch_sva <- function(rld_obj=rld,
   if(continuous ==F){
     if(shape_opt=="NULL"){
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_discrete()+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -944,7 +949,7 @@ Limma_batch_sva <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete()+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -967,7 +972,7 @@ Limma_batch_sva <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_discrete()+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -991,7 +996,7 @@ Limma_batch_sva <- function(rld_obj=rld,
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[color_obj]])
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
-        geom_point(size =3) +
+        geom_point(size =point_size) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
         xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -1015,7 +1020,7 @@ Limma_batch_sva <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -1039,7 +1044,7 @@ Limma_batch_sva <- function(rld_obj=rld,
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
-          geom_point(size =3) +
+          geom_point(size =point_size) +
           scale_color_gradientn(colours = colour_gradient,name=color_title)+
           scale_shape_manual(values=df$x,name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
@@ -1340,21 +1345,21 @@ Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG",
           axis.ticks = element_line(color = "black",size = 1),
           axis.title = element_text(colour = "black", size = 10, face = "bold"))
 }
-cluster_Top_genes_output <- function(object=rld, dds_obj=dds, anno_color,
+cluster_Top_genes_output <- function(object=rld_df, dds_obj=dds, anno_color,
                                      first_annotation="condition",
                                      second_annotation="Sex",
                                      heatmap_title, gene_list=all_DE_genes,
                                      ntop=1000){
   # calculate the variance for each gene
-  rv <- rowVars(assay(object))
+  rv <- rowVars(object)
   
   # select the ntop genes by variance
   select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  df_ <- as.data.frame(colData(dds)[,c(first_annotation,second_annotation)])
+  df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
   colnames(df_) <- c(first_annotation,second_annotation)
   row.names(df_) <- colnames(object)
   
-  map <- pheatmap(assay(object)[select,],
+  map <- pheatmap(object[select,],
                   cluster_rows=TRUE, cluster_cols=T,
                   clustering_distance_rows="correlation",
                   clustering_distance_cols="correlation",
@@ -1363,19 +1368,19 @@ cluster_Top_genes_output <- function(object=rld, dds_obj=dds, anno_color,
                   main = heatmap_title,
                   annotation_col=df_,
                   annotation_colors = anno_color) 
-  name_output <<- assay(object)[map$tree_row$order,]
+  name_output <<- object[map$tree_row$order,]
 }
-Cluster_genelist_output <-function(object=rld, dds_obj=dds, anno_color,
+Cluster_genelist_output <-function(object=rld_df, dds_obj=dds, anno_color,
                                    first_annotation="condition",
                                    second_annotation="Sex",
                                    heatmap_title, gene_list=all_DE_genes,
                                    display_row=F){
   
-  df_ <- as.data.frame(colData(dds)[,c(first_annotation,second_annotation)])
+  df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
   colnames(df_) <- c(first_annotation,second_annotation)
   row.names(df_) <- colnames(object)
   
-  map <- pheatmap(assay(object)[gene_list,],
+  map <- pheatmap(object[gene_list,],
                   cluster_rows=TRUE, cluster_cols=T,
                   clustering_distance_rows="correlation",
                   clustering_distance_cols="correlation",
@@ -1384,7 +1389,7 @@ Cluster_genelist_output <-function(object=rld, dds_obj=dds, anno_color,
                   main = heatmap_title,
                   annotation_col=df_,
                   annotation_colors =anno_color ) 
-  Clustering_output <<- assay(object)[map$tree_row$order,]
+  Clustering_output <<- object[map$tree_row$order,]
 }
 
 
