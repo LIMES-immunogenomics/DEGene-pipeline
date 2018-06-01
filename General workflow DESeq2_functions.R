@@ -1689,7 +1689,7 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
                                      "gelatin_wt",
                                      "gelatin_Cyth2_KO"),shape_opt="Treatment") {
   geneCounts_lfc <- plotCounts(dds_object, gene = gene_symbol, 
-                               color_obj = condition, pc=pc_cond,
+                               intgroup = condition, pc=pc_cond,
                                returnData = TRUE)
   geneCounts_lfc$condition <- annotation[[paste0(condition)]]
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
@@ -1711,6 +1711,38 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
       scale_shape(name=legend_shape)+
       geom_beeswarm(cex = 3, na.rm=T)+
       ylab("Normalized counts")+
+      labs(title=paste0(gene_symbol),colour=condition)+
+      theme_bw()+
+      theme(plot.title = element_text(hjust=0.5))
+  }
+}
+plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbol="TNF", 
+                                       condition="type", anno_colour=anno_batch,
+                                       order=c("GM","WM"),
+                                       shape_opt="status") {
+  
+  geneCounts_lfc <- as.data.frame(batch_corrected_rld[gene_symbol,])
+  geneCounts_lfc$condition <- annotation[[paste0(condition)]]
+  geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
+  geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+  legend_shape<-paste0(shape_opt)
+  colnames(geneCounts_lfc)<-c("count","condition","sign")
+  if (shape_opt=="NULL"){
+    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
+      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+      scale_color_manual(values=anno_colour)+
+      geom_beeswarm(cex = 3, na.rm=T)+
+      ylab("Batch-correct rlog transformed counts")+
+      labs(title=paste0(gene_symbol),colour=condition)+
+      theme_bw()+
+      theme(plot.title = element_text(hjust=0.5))}
+  else{
+    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+      scale_color_manual(values=anno_colour)+
+      scale_shape(name=legend_shape)+
+      geom_beeswarm(cex = 3, na.rm=T)+
+      ylab("Batch-correct rlog transformed counts")+
       labs(title=paste0(gene_symbol),colour=condition)+
       theme_bw()+
       theme(plot.title = element_text(hjust=0.5))
