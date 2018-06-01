@@ -537,10 +537,6 @@ spec_gel_ko_comp_wt_down <- setdiff(gelatin_Cyth2_KO_genes_less, intersect(gelat
 rld<-Var_stab(dsfm,blind_param = F)
 rld_df<-as.data.frame(assay(rld))
 
-#####################################################################################
-######## Generate a data frame with the batch corrected normalized reads #########
-#####################################################################################
-
 # create a data frame with the batch-corrected values of the expression
 batch_corrected_rld <- removeBatchEffect(x=rld_df,batch = annotation$`Customer ID`,design = model.matrix(~annotation$merged))
 
@@ -549,10 +545,12 @@ batch_corrected_rld <- removeBatchEffect(x=rld_df,batch = annotation$`Customer I
 # if you have no second annotation, just add second_annotation=NULL
 # either add rld as input to display the normalized, rlog-transformed data
 # or add batch-corrected_rld as input to display the batch-corrected rlog-transformed data
-Clustering_all_DEgenes_output <- Cluster_genelist_output(object=batch_corrected_rld, dds_obj=DE_object$CON_GM@parameters[[1]], 
+# change second_annotation to NULL if you do not want the second batch do be displayed
+
+Clustering_all_DEgenes_output <- Cluster_genelist_output(object=rld_df, dds_obj=DE_object$CON_GM@parameters[[1]], 
                                                          heatmap_title="All DE genes",
                                                          first_annotation="status",
-                                                         second_annotation="type",
+                                                         second_annotation=NULL,
                                                          anno_color=list(status=anno,type=anno_batch), 
                                                          gene_list=all_DE_genes,
                                                          display_row=F)
@@ -562,7 +560,7 @@ Cluster_top1000 <- cluster_Top_genes_output(object=rld_df, dds_obj=DE_object$CON
                                             heatmap_title="Top 1000 genes", 
                                             ntop=1000,
                                             first_annotation="type",
-                                            second_annotation="status",
+                                            second_annotation=NULL,
                                             anno_color=list(type=anno_batch,status=anno), 
                                             gene_list=all_DE_genes)
 
