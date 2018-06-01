@@ -1355,7 +1355,8 @@ cluster_Top_genes_output <- function(object=rld_df, dds_obj=dds, anno_color,
   
   # select the ntop genes by variance
   select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
-  df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
+  if(is.null(second_annotation)==F){
+    df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
   colnames(df_) <- c(first_annotation,second_annotation)
   row.names(df_) <- colnames(object)
   
@@ -1369,6 +1370,23 @@ cluster_Top_genes_output <- function(object=rld_df, dds_obj=dds, anno_color,
                   annotation_col=df_,
                   annotation_colors = anno_color) 
   name_output <<- object[map$tree_row$order,]
+  }
+  else{
+    df_ <- as.data.frame(colData(dds_obj)[,first_annotation])
+    colnames(df_) <- first_annotation
+    row.names(df_) <- colnames(object)
+    
+    map <- pheatmap(object[select,],
+                    cluster_rows=TRUE, cluster_cols=T,
+                    clustering_distance_rows="correlation",
+                    clustering_distance_cols="correlation",
+                    show_rownames=F, show_colnames = TRUE,
+                    scale = "row",
+                    main = heatmap_title,
+                    annotation_col=df_,
+                    annotation_colors = anno_color) 
+    name_output <<- object[map$tree_row$order,]
+  }
 }
 Cluster_genelist_output <-function(object=rld_df, dds_obj=dds, anno_color,
                                    first_annotation="condition",
@@ -1376,6 +1394,7 @@ Cluster_genelist_output <-function(object=rld_df, dds_obj=dds, anno_color,
                                    heatmap_title, gene_list=all_DE_genes,
                                    display_row=F){
   
+  if(is.null(second_annotation)==F){
   df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
   colnames(df_) <- c(first_annotation,second_annotation)
   row.names(df_) <- colnames(object)
@@ -1390,6 +1409,23 @@ Cluster_genelist_output <-function(object=rld_df, dds_obj=dds, anno_color,
                   annotation_col=df_,
                   annotation_colors =anno_color ) 
   Clustering_output <<- object[map$tree_row$order,]
+  }
+  else{
+    df_ <- as.data.frame(colData(dds_obj)[,first_annotation])
+    colnames(df_) <- c(first_annotation)
+    row.names(df_) <- colnames(object)
+    
+    map <- pheatmap(object[gene_list,],
+                    cluster_rows=TRUE, cluster_cols=T,
+                    clustering_distance_rows="correlation",
+                    clustering_distance_cols="correlation",
+                    show_rownames=display_row, show_colnames = TRUE,
+                    scale = "row",
+                    main = heatmap_title,
+                    annotation_col=df_,
+                    annotation_colors =anno_color ) 
+    Clustering_output <<- object[map$tree_row$order,] 
+  }
 }
 
 
