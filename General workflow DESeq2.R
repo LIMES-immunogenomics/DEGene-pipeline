@@ -29,6 +29,8 @@ anno <- c(CON="#B1BBCF",
 
 anno_batch <- c(GM="#0288D1",WM="#F44336")
 
+anno_merged<-c(CON_GM="#B1BBCF", CON_WM="#757575", MS_GM="#0288D1",  MS_WM="#F44336" )
+
 #################################################################################
 ##### Kallisto reads (jump this step if you have a Symbol Gene count table) ##### 
 #################################################################################
@@ -624,11 +626,17 @@ KEGG_LPS <- plot_KEGG(upreg_genes_list=AB_H1N1_up,
 ##### Plot single genes ####
 
 #plots a single gene indicating the normalized counts for all conditions
+# This duntion will plot the normalized count
 
 plot_single_gene(dds_object=DE_object$CON_GM@parameters[[1]], gene_symbol="IL6", 
-                 condition="Treatment", pc_cond=F, anno_colour=anno, 
-                 order=c("ctl","H1N1"),shape_opt="Type")
-#
+                 condition="merged", pc_cond=F, anno_colour=anno_merged, 
+                 order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt="type")
+
+# This function plots the batch-corrected counts
+plot_batch_corrected_counts(batch_rld=batch_corrected_rld, gene_symbol="IL6", 
+                            condition="merged", anno_colour=anno_merged,
+                            order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt="type")
+
 
 ##### Creating tables of GO terms #####
 
