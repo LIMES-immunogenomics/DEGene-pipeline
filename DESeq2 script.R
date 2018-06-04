@@ -333,7 +333,11 @@ df_names_CON_GM <- names(list_df)
 ### or just type MA_function(condi=NULL) for multiplot of all conditions, 
 # missing p values (NA) will not be displayed
 
-MA_function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_object$CON_GM, y_lim=c(-10,10))
+MA_function(condition=NULL,
+df_names=df_names_CON_GM, 
+DE_obj=DE_object$CON_GM, 
+y_lim=c(-10,10),
+list_df=data.statistics)
 
 
 #####p value distribution #####
@@ -345,7 +349,11 @@ MA_function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_object$CON_GM, y_
 # of 1 correspond to genes in the span between +LFC threshold 
 # and -LFC threshold, thus non-DEG
 
-plot_pval(df_names=df_names_CON_GM,condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object$CON_GM)
+plot_pval(df_names=df_names_CON_GM,
+condition=NULL,
+ylim_obj=c(0,10000), 
+DE_obj=DE_object$CON_GM,
+          list_df=data.statistics)
 
 ##### Plot up- & downregulated DE genes for all conditions ####
 
