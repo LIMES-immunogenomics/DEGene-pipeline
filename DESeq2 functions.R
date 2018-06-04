@@ -1208,7 +1208,11 @@ df_function <- function(results_obj=DE_object_01@results){
   }
   list_df
 }
-MA_function <- function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_object, y_lim=c(-10,10)){
+MA_function <- function(condition=NULL,
+                        df_names=df_names_CON_GM, 
+                        DE_obj=DE_object, 
+                        y_lim=c(-10,10),
+                        list_df=data.statistics){
   list_store <- list()
   if(!is.null(condition)){ multi_plot =F} else {multi_plot=T}
   plot_MA <- function(condition, lfc_shrinkage=T){
@@ -1246,7 +1250,12 @@ MA_function <- function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_objec
   }
 }
 
-plot_pval <- function(df_names=df_names_CON_GM,condition=NULL,ylim_obj=c(0,10000), DE_obj=DE_object){
+
+plot_pval <- function(df_names=df_names_CON_GM,
+                      condition=NULL,
+                      ylim_obj=c(0,10000), 
+                      DE_obj=DE_object,
+                      list_df=list_df){
   list_pval <- list()
   if(!is.null(condition)){ multi_plot =F} else {multi_plot=T}
   histo <- function(condition){
