@@ -1354,6 +1354,19 @@ Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG",
           axis.ticks = element_line(color = "black",size = 1),
           axis.title = element_text(colour = "black", size = 10, face = "bold"))
 }
+removeBatchEffect_function <- function(x=rld_df,
+                                       batch = annotation$`Customer ID`,
+                                       model = model.matrix(~annotation$merged)){
+  if(is.numeric(batch)==T){
+    removeBatchEffect(x=as.matrix(rld_df),
+                      covariates = annotation$`Customer ID`,
+                      design = model)}
+  else{
+    removeBatchEffect(x=rld_df,
+                      batch = annotation$`Customer ID`,
+                      design = model)
+  }
+}
 cluster_Top_genes_output <- function(object=rld_df, dds_obj=dds, anno_color,
                                      first_annotation="condition",
                                      second_annotation="Sex",
