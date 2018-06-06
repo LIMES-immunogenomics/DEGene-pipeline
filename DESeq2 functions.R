@@ -1714,10 +1714,8 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
                                returnData = TRUE)
   geneCounts_lfc$condition <- annotation[[paste0(condition)]]
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
-  geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-  legend_shape<-paste0(shape_opt)
   if(is.null(anno_colour)==F){
-  if (shape_opt=="NULL"){
+  if (is.null(shape_opt)==T){
     ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
       scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
       scale_color_manual(values=anno_colour)+
@@ -1727,6 +1725,8 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
       theme_bw()+
       theme(plot.title = element_text(hjust=0.5))}
   else{
+    geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+    legend_shape<-paste0(shape_opt)
     ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
       scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
       scale_color_manual(values=anno_colour)+
@@ -1737,7 +1737,7 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
       theme_bw()+
       theme(plot.title = element_text(hjust=0.5))}}
     else{
-      if (shape_opt=="NULL"){
+      if (is.null(shape_opt)==T){
         ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
           scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
           scale_color_brewer(palette = "Spectral")+
@@ -1747,6 +1747,8 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
           theme_bw()+
           theme(plot.title = element_text(hjust=0.5))}
       else{
+        geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+        legend_shape<-paste0(shape_opt)
         ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
           scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
           scale_color_brewer(palette = "Spectral")+
@@ -1767,11 +1769,9 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
   geneCounts_lfc <- as.data.frame(batch_corrected_rld[gene_symbol,])
   geneCounts_lfc$condition <- annotation[[paste0(condition)]]
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
-  geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-  legend_shape<-paste0(shape_opt)
-  colnames(geneCounts_lfc)<-c("count","condition","sign")
+  colnames(geneCounts_lfc)<-c("count","condition")
   if(is.null(anno_colour)==F){
-  if (shape_opt=="NULL"){
+  if (is.null(shape_opt)==T){
     ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
       scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
       scale_color_manual(values=anno_colour)+
@@ -1781,6 +1781,8 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
       theme_bw()+
       theme(plot.title = element_text(hjust=0.5))}
   else{
+    geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+    legend_shape<-paste0(shape_opt)
     ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
       scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
       scale_color_manual(values=anno_colour)+
@@ -1791,7 +1793,7 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
       theme_bw()+
       theme(plot.title = element_text(hjust=0.5))}}
     else{
-      if (shape_opt=="NULL"){
+      if (is.null(shape_opt)==T){
         ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
           scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
           scale_color_brewer(palette = "Spectral")+
@@ -1801,6 +1803,8 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
           theme_bw()+
           theme(plot.title = element_text(hjust=0.5))}
       else{
+        geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+        legend_shape<-paste0(shape_opt)
         ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
           scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
           scale_color_brewer(palette = "Spectral")+
@@ -1813,7 +1817,6 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
     }
   }
 }
-
 Compare_FC <- function(input_file=DE_object@results, condition1="CpG", condition2="LPS_IFNg"){
   df <- as.data.frame(input_file)
   df_cond1 <- df[[condition1]]
