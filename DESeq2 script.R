@@ -350,10 +350,10 @@ list_df=data.statistics)
 # and -LFC threshold, thus non-DEG
 
 plot_pval(df_names=df_names_CON_GM,
-condition=NULL,
-ylim_obj=c(0,10000), 
-DE_obj=DE_object$CON_GM,
-          list_df=data.statistics)
+          condition=NULL,
+          ylim_obj=c(0,10000), 
+          DE_obj=DE_object$CON_GM,
+          list_df = list_df_CON_GM)
 
 ##### Plot up- & downregulated DE genes for all conditions ####
 
