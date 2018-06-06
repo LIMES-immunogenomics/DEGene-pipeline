@@ -641,7 +641,7 @@ KEGG_LPS <- plot_KEGG(upreg_genes_list=AB_H1N1_up,
 
 plot_single_gene(dds_object=DE_object$CON_GM@parameters[[1]], gene_symbol="IL6", 
                  condition="merged", pc_cond=F, anno_colour=NULL, 
-                 order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt="type")
+                 order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt=NULL)
 
 # This function plots the batch-corrected counts
 plot_batch_corrected_counts(batch_rld=batch_corrected_rld, gene_symbol="IL6", 
