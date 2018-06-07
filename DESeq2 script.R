@@ -203,6 +203,7 @@ pca[1]
 
 Limma_batch(rld_obj=rld,
             object=rld_df, 
+            column_interest=annotation$merged,
             batch_obj=annotation$`Customer ID`,
             batch2_obj=NULL,
             shape_opt="NULL",
@@ -230,7 +231,7 @@ mod0 <- model.matrix(~   1, colData(dds))
 # n.sv will define how many itterations SVA will perform
 
 # find number of sva
-n.sv = num.sv(dat,mod,method="leek")
+n.sv<-num.sv(dat=assay(rld),mod,method="leek")
 svseq_NULL<- sva(assay(rld), mod, mod0, n.sv = 7)
 
 #svaobj <-svaseq(assay(rld), mod, mod0, n.sv=7)
@@ -263,6 +264,7 @@ Limma_batch_sva(rld_obj=rld,
                 shape_opt="NULL",
                 ntop=500, PC_1=1, PC_2=2,
                 color_obj="merged",
+                anno_colour=anno_merged,
                 continuous=F,
                 colour_gradient=c("red","green","blue"),
                 point_size=3)
