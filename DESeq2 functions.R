@@ -849,6 +849,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
 
 Limma_batch <- function(rld_obj=rld,
                         object=rld_df, 
+                        column_interest=annotation$merged,
                         batch_obj=annotation$Sex,
                         batch2_obj=NULL,
                         shape_opt="Sex",
@@ -859,7 +860,7 @@ Limma_batch <- function(rld_obj=rld,
                         colour_gradient=c("red","green","blue"),
                         point_size=3){
   
-  removedbatch_rld <- removeBatchEffect(x=object, batch=batch_obj, batch2 = batch2_obj)
+  removedbatch_rld <- removeBatchEffect(x=object, batch=batch_obj, batch2 = batch2_obj, model=model.matrix(~paste0(column_interest)))
   if(ntop=="all"){
     pca <- prcomp(t(removedbatch_rld)) 
   }
@@ -1114,6 +1115,7 @@ Limma_batch_sva <- function(rld_obj=rld,
                             shape_opt="Sex",
                             ntop=500, PC_1=1, PC_2=2,
                             color_obj="Treatment",
+                            anno_colour=anno_merged,
                             continuous=F,
                             colour_gradient=c("red","blue"),
                             point_size=3){
@@ -1147,34 +1149,11 @@ Limma_batch_sva <- function(rld_obj=rld,
   
   #plot PCA
   if(continuous ==F){
-    if(shape_opt=="NULL"){
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =point_size) +
-        scale_color_discrete()+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
-    }
-    else{
-      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-        legend_title <- paste0(shape_opt)
-        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+    if(is.null(anno_colour)){
+      if(shape_opt=="NULL"){
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
           geom_point(size =point_size) +
           scale_color_discrete()+
-          scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
@@ -1192,12 +1171,60 @@ Limma_batch_sva <- function(rld_obj=rld,
                 legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
-        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-        legend_title <- paste0(shape_opt)
-        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+        if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_discrete()+
+            scale_shape(name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+        }
+        else{
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_discrete()+
+            scale_shape_manual(values=df$x,name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+          
+        }# end of length
+      }# end of shape
+    }
+    else{
+      if(shape_opt=="NULL"){
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
           geom_point(size =point_size) +
-          scale_color_discrete()+
-          scale_shape_manual(values=df$x,name=legend_title)+
+          scale_color_manual(values=anno_colour, name=color_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
@@ -1213,8 +1240,58 @@ Limma_batch_sva <- function(rld_obj=rld,
                 axis.ticks = element_line(color = "black",size = 1),
                 axis.title = element_text(colour = "black", size = 10, face = "bold"),
                 legend.key = element_rect(fill = "white", colour = "black"))
-        
-      }}}
+      }
+      else{
+        if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_manual(values=anno_colour, name=color_title)+
+            scale_shape(name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+        }
+        else{
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_manual(values=anno_colour, name=color_title)+
+            scale_shape_manual(values=df$x,name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+          
+        }# end of length
+      }# end of shape
+    }
+      }#continuous ends here
   else{
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[color_obj]])
