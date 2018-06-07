@@ -5,7 +5,7 @@ setwd("E:/Nico/GitHub-Deseq2")
 
 ##### Install & load required packages ####
 ##### Installation
-source("DESeq2 Edition_2_functions.R")
+source("DESeq2 functions.R")
 
 
 ##### Annotation file #####
@@ -167,26 +167,30 @@ sorted_pearson_correaltion(rld=rld_df,midpoint_set= 0.99,
 # we first select only the 500 genes showing the highest variance. 
 # The principal components to be ploted can be defined by PC_1 & PC_2
 # if you have a continuous variable for the colour, change continuous to T
+# stet anno_colour=NULL if you don't want to choose your own colouring.
 
 # PCA of raw, unnormalized counts
 pca_raw <- PCA_rawdata(object=rld,
                        ntop=500, PC_1=1, PC_2=2,
-                       color_obj="PMD",
+                       color_obj="merged",
+                       anno_colour=anno_merged,
                        count_mat=count_matrix,
                        shape_opt="type",
-                       continuous=T,
+                       continuous=F,
                        colour_gradient=c("red","white","blue"),
                        point_size=3)
 pca_raw[1]
 
 # PCA of normalized, variance stabilized counts, you can either set shape_opt="NULL" or 
 # a column of annotation that you would like to plot as shape
+# stet anno_colour=NULL if you don't want to choose your own colouring.
 
 pca <- PCA_DEseq2(object=rld, 
                   ntop=500, PC_1=1, PC_2=2,
-                  color_obj="PMD",
-                  shape_opt = "merged",
-                  continuous=T,
+                  color_obj="merged",
+                  anno_colour=anno_merged,
+                  shape_opt = "status",
+                  continuous=F,
                   colour_gradient=c("red","yellow","blue"),
                   point_size=3)
 pca[1]
@@ -204,6 +208,7 @@ Limma_batch(rld_obj=rld,
             shape_opt="NULL",
             ntop=500, PC_1=1, PC_2=2,
             color_obj="merged",
+            anno_colour=anno_merged,
             continuous=F,
             colour_gradient=c("blue","green","red"),
             point_size=3)
@@ -333,11 +338,7 @@ df_names_CON_GM <- names(list_df)
 ### or just type MA_function(condi=NULL) for multiplot of all conditions, 
 # missing p values (NA) will not be displayed
 
-MA_function(condition=NULL,
-df_names=df_names_CON_GM, 
-DE_obj=DE_object$CON_GM, 
-y_lim=c(-10,10),
-list_df=data.statistics)
+MA_function(condition=NULL,df_names=df_names_CON_GM, DE_obj=DE_object$CON_GM, y_lim=c(-10,10))
 
 
 #####p value distribution #####
@@ -553,6 +554,7 @@ rld_df<-as.data.frame(assay(rld))
 batch_corrected_rld <- removeBatchEffect_function(x=rld_df,batch = annotation[c("SV1","SV2","SV3")],model = model.matrix(~annotation$merged))
 
 
+
 # Will display and cluster a gene list and its samples
 # if you have no second annotation, just add second_annotation=NULL
 # either add rld as input to display the normalized, rlog-transformed data
@@ -648,6 +650,7 @@ plot_batch_corrected_counts(batch_rld=batch_corrected_rld, gene_symbol="IL6",
                             condition="merged", anno_colour=NULL,
                             order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt="type")
 
+
 ##### Creating tables of GO terms #####
 
 Table_GO <- cbind(head(GO_CpG_up[,"Description"], 10),
@@ -693,3 +696,704 @@ colnames(GOI_padj_table) <- c("CpG","LPS_IFNg", "PolyI:C")
 rownames(GOI_padj_table) <- GOI
 
 write.csv(GOI_padj_table, "Adjusted p values of GOI.csv")
+
+
+####     Functional prediction      ####
+
+
+# vorher setwd machen
+
+#if you run this for the first time:
+#first you need to install java32: 
+#devtools::install_github("kassambara/r2excel")
+library("r2excel")
+
+
+# bei cond die Spalte in der annotation angeben, die wichtig ist, z.B. condition oder treatment
+# bei DE_gene_list: Liste bennen z.B. 'xyz' (danach werden die output files am Ende genannt) und das entsprechende DE_object$...@DE_genes... eingeben.
+# -> output files werden in neuem Ordner "clusterprofiler" in der working directory gespeichert
+# orga_type: "human" oder "mouse" möglich
+# gmt file selbst definieren
+# Bsp.:
+dds<-DE_object$CON_GM@parameters[[1]]
+functional_prediction(input_file= dds,
+                      cond= "status",
+                      orga_type="human",
+                      DE_gene_list= list('Con_GM_VS_CON_WM_UP' = head(DE_object$CON_GM@DE_genes$CON_WM$`up-regulated genes`,50),
+                                         'Con_GM_VS_CON_WM_DOWN' = head(DE_object$CON_GM@DE_genes$CON_WM$`down-regulated genes`,50)),
+                      gmtfile=file("h.all.v5.2.symbols.gmt"))
+
+# Wenn beim Ausführen die Meldung "Error in dev.off() : cannot shut down device 1 (the null device)" am Ende erscheint, sollte das kein Problem darstellen.
+dev.off()
+######################################
+# Und hier die ganze function
+
+functional_prediction <- function(input_file= dds,
+                                  cond= condition,
+                                  orga_type="human",
+                                  DE_gene_list= list('OAvsCtrl_UP' = DE_object$` 24h_ctrl`@DE_genes$` 24h_OA`$`up-regulated genes`),
+                                  gmtfile=file("h.all.v5.2.symbols.gmt")){
+  normalized_counts <- counts(dds, normalized=T)
+  # create normdata file
+  t <- t(normalized_counts)
+  a <-as.data.frame(annotation[["merged"]], rownames=rownames(annotation))
+  rownames(a)<-rownames(annotation)
+  colnames(a) <- c("merged")
+  normdata <- merge(a, t, by = "row.names", all = TRUE)
+  normdata <- data.frame(normdata[,-1],row.names = normdata[,1])
+  #read in the expression data and save genes names as universe - to be used as background for GOEA
+  universe <- colnames(normdata)
+  
+  ## define DE gene lists
+  #convert gene lists to dataframe
+  if(length(DE_gene_list)==1){
+    cluster_genes_original <- t(as.data.frame(DE_gene_list))
+    rownames(cluster_genes_original) <- c(1:nrow(cluster_genes_original))
+    cluster_genes_original <- as.data.frame(cluster_genes_original)
+    write.table(cluster_genes_original, "cluster_genes_original.txt", sep="\t", na="")
+    cluster_genes_original <- read.delim("cluster_genes_original.txt", stringsAsFactor = FALSE, na.strings = "", check.names = FALSE, header = T)
+  }
+  if(length(DE_gene_list)>1){
+    as.data.frame.list <- function(x, row.names=NULL, optional=FALSE, ...) {
+      if(!all(unlist(lapply(x, class)) %in% 
+              c('raw','character','complex','numeric','integer','logical'))) {
+        warning('All elements of the list must be a vector.')
+        NextMethod(x, row.names=row.names, optional=optional, ...)
+      }
+      allequal <- all(unlist(lapply(x, length)) == length(x[[1]]))
+      havenames <- all(unlist(lapply(x, FUN=function(x) !is.null(names(x)))))
+      if(havenames) { #All the vectors in the list have names we can use
+        colnames <- unique(unlist(lapply(x, names)))
+        df <- data.frame(matrix(
+          unlist(lapply(x, FUN=function(x) { x[colnames] })),
+          nrow=length(x), byrow=TRUE))
+        names(df) <- colnames
+      } else if(allequal) { #No names, but are of the same length
+        df <- data.frame(matrix(unlist(x), nrow=length(x), byrow=TRUE), ...)
+        hasnames <- which(unlist(lapply(x, FUN=function(x) !is.null(names(x)))))
+        if(length(hasnames) > 0) { #We'll use the first element that has names
+          names(df) <- names(x[[ hasnames[1] ]])
+        }
+      } else { #No names and different lengths, we'll make our best guess here!
+        warning(paste("The length of vectors are not the same and do not ",
+                      "are not named, the results may not be correct.", sep=''))
+        #Find the largest
+        lsizes <- unlist(lapply(x, length))
+        start <- which(lsizes == max(lsizes))[1]
+        df <- x[[start]]
+        for(i in (1:length(x))[-start]) {
+          y <- x[[i]]
+          if(length(y) < length(x[[start]])) {
+            y <- c(y, rep(NA, length(x[[start]]) - length(y)))
+          }
+          if(i < start) {
+            df <- rbind(y, df)
+          } else {
+            df <- rbind(df, y)
+          }
+        }
+        df <- as.data.frame(df, row.names=1:length(x))
+        names(df) <- paste(1:ncol(df), sep='')
+      }
+      if(missing(row.names)) {
+        row.names(df) <- names(x)
+      } else {
+        row.names(df) <- row.names
+      }
+      return(df)
+    }
+    cluster_genes_original <- as.data.frame(t(as.data.frame.list(DE_gene_list)))
+    # will also save a txt of your DE genes
+    write.table(cluster_genes_original, "cluster_genes_original.txt", sep="\t", na="")
+    cluster_genes_original <- read.delim("cluster_genes_original.txt", stringsAsFactor = FALSE, na.strings = "", check.names = FALSE, header = T)
+    cluster_genes_original <- cluster_genes_original[ , order(names(cluster_genes_original))]
+  }
+  
+  # define where results are saved
+  plotPath = file.path(getwd(), "clusterprofiler");
+  dir.create(file.path(getwd(), "clusterprofiler"), showWarnings = FALSE)
+  cluster_folder <- "clusterprofiler"
+  
+  human = useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  mouse = useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+  
+  
+  if(orga_type == "mouse"){
+    universe_mouse_human = getLDS(attributes = c("mgi_symbol"), filters = "mgi_symbol", values = universe, mart = mouse, attributesL = c("hgnc_symbol"), martL = human, uniqueRows=T)
+    universe_mouse_human <- universe_mouse_human[,2]
+    universe_Entrez_mouse = bitr(universe, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Mm.eg.db")
+    universe_Entrez_mouse = unlist(universe_Entrez_mouse[2],use.names = FALSE)
+    universe_Entrez_mouse_human = bitr(universe_mouse_human, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+    universe_Entrez_mouse_human = unlist(universe_Entrez_mouse_human[2],use.names = FALSE)
+  }else{
+    universe_Entrez = bitr(universe, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+    universe_Entrez = unlist(universe_Entrez[2],use.names = FALSE)
+  }
+  
+  #gmtfile <- file("h.all.v5.2.symbols.gmt")
+  c1_hallmark_genes <- read.gmt(gmtfile)
+  
+  
+  
+  list_of_entrez <- list()
+  
+  
+  ##
+  for(id_it in 1:ncol(cluster_genes_original)){
+    
+    list_of_genes <- list(cluster_genes_original[,id_it])
+    
+    #if mouse, mouse symbols are translated to human, because some gene sets works only with human
+    if(orga_type == "mouse"){
+      universe_orignal <- universe
+      genes_cluster = getLDS(attributes = c("mgi_symbol"), filters = "mgi_symbol", values = unlist(list_of_genes), mart = mouse, attributesL = c("hgnc_symbol"), martL = human, uniqueRows=T)
+      cluster_genes <- genes_cluster[,2]
+      list_of_genes_mouse_human <- list(cluster_genes)
+      entrez_de = bitr(unlist(list_of_genes), fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Mm.eg.db")
+      module_entrez_mouse <- unlist(entrez_de[2],use.names = FALSE)
+      entrez_de = bitr(unlist(list_of_genes_mouse_human), fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+      module_entrez_mouse_human <- unlist(entrez_de[2],use.names = FALSE)
+      
+      list_of_entrez[[colnames(cluster_genes_original)[id_it]]] <- module_entrez_mouse
+      
+    }else{
+      entrez_de = bitr(unlist(list_of_genes), fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+      module_entrez <- unlist(entrez_de[2],use.names = FALSE)
+      
+      list_of_entrez[[colnames(cluster_genes_original)[id_it]]] <- module_entrez
+    }
+    
+    wb <- createWorkbook(type="xlsx")
+    #wb <- createWorkbook()
+    
+    
+    pdf(paste(cluster_folder,"/ClusterProfiler_",colnames(cluster_genes_original)[id_it],".pdf",sep=""), onefile=FALSE,  width = 15, height = 15)
+    
+    font_size <- 8
+    
+    
+    #Create figure window and layout
+    plot.new()
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(3, 2)))
+    
+    #Hallmark gene sets
+    #start
+    #egmt <- enricher(module_entrez, TERM2GENE=c1_hallmark, universe = universe_genes, pvalueCutoff = 0.05, pAdjustMethod = "none",qvalueCutoff = 1.0)
+    
+    if(orga_type == "mouse"){
+      egmt <- enricher(unlist(list_of_genes_mouse_human), TERM2GENE=c1_hallmark_genes, universe = universe_mouse_human, pvalueCutoff = 0.05, pAdjustMethod = "none",qvalueCutoff = 1.0)
+    }else{
+      egmt <- enricher(unlist(list_of_genes), TERM2GENE=c1_hallmark_genes, universe = universe, pvalueCutoff = 0.05, pAdjustMethod = "none",qvalueCutoff = 1.0)
+    }
+    
+    if(!is.null(egmt)){
+      hallmark_plot <- dotplot(egmt, font.size = font_size, title = "Hallmark enrichment")
+      pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 1))
+      print(hallmark_plot, newpage = FALSE)
+      popViewport()
+      
+      #addWorksheet(wb, "Hallmark")
+      #writeData(wb, 1, egmt@result)
+      
+      sheet <- xlsx::createSheet(wb, sheetName = "Hallmark")
+      xlsx.addTable(wb, sheet, egmt@result)
+    }
+    #ende
+    
+    #KEGG
+    #start
+    
+    if(orga_type == "mouse"){
+      KEGG <- enrichKEGG(gene = module_entrez_mouse, organism = 'mmu', pvalueCutoff=0.05,universe = universe_Entrez_mouse, pAdjustMethod = "none", qvalueCutoff = 1.0)
+      
+      Enriched_Kegg<-NULL
+      Enriched_Kegg_obj<-NULL
+      reg_Mm=AnnotationDbi::select(org.Mm.eg.db,as.character(unlist(list_of_genes)),"ENTREZID","SYMBOL",multiVals="first")
+      
+      
+      if(!is.null(KEGG))
+      {
+        if(nrow(summary(KEGG))>0)
+        {
+          df_kk<-as.data.frame(summary(KEGG))[1:8]
+          for(x in 1:length(df_kk[,8]))
+          {
+            temp<-strsplit(df_kk[x,8],"/")
+            id<-which(reg_Mm$ENTREZID %in% temp[[1]] )
+            df_kk[x,8]<-paste(reg_Mm$SYMBOL[id], collapse = '/')
+          }
+          Enriched_Kegg<-df_kk
+          Enriched_Kegg_obj<-KEGG
+        }
+        else
+        {
+          Enriched_Kegg<-data.frame(matrix(NA, nrow = 0, ncol = 8))
+          Enriched_Kegg_obj<-NULL
+        }
+        
+      }
+      
+    }else{
+      KEGG <- enrichKEGG(gene = module_entrez, organism = 'hsa', pvalueCutoff=0.05,universe = universe_Entrez, pAdjustMethod = "none", qvalueCutoff = 1.0)
+      
+      Enriched_Kegg<-NULL
+      Enriched_Kegg_obj<-NULL
+      reg_Hs=AnnotationDbi::select(org.Hs.eg.db,as.character(unlist(list_of_genes)),"ENTREZID","SYMBOL",multiVals="first")
+      
+      
+      if(!is.null(KEGG))
+      {
+        if(nrow(summary(KEGG))>0)
+        {
+          df_kk<-as.data.frame(summary(KEGG))[1:8]
+          for(x in 1:length(df_kk[,8]))
+          {
+            temp<-strsplit(df_kk[x,8],"/")
+            id<-which(reg_Hs$ENTREZID %in% temp[[1]] )
+            df_kk[x,8]<-paste(reg_Hs$SYMBOL[id], collapse = '/')
+          }
+          Enriched_Kegg<-df_kk
+          Enriched_Kegg_obj<-KEGG
+        }
+        else
+        {
+          Enriched_Kegg<-data.frame(matrix(NA, nrow = 0, ncol = 8))
+          Enriched_Kegg_obj<-NULL
+        }
+        
+      }
+      
+    }
+    
+    
+    if(!is.null(KEGG)){
+      KEGG_plot <- dotplot(KEGG, font.size = font_size, title = "KEGG enrichment")
+      pushViewport(viewport(layout.pos.col = 2, layout.pos.row = 2))
+      print(KEGG_plot, newpage = FALSE)
+      popViewport()
+      
+      #addWorksheet(wb, "KEGG")
+      #writeData(wb, 2, Enriched_Kegg)
+      sheet <- xlsx::createSheet(wb, sheetName = "KEGG")
+      xlsx.addTable(wb, sheet, Enriched_Kegg)
+    }
+    #ende
+    
+    #Reactome
+    #start
+    if(orga_type == "mouse"){
+      ReacTome <- enrichPathway(gene=module_entrez_mouse, organism = "mouse", pvalueCutoff=0.05, universe = universe_Entrez_mouse, pAdjustMethod = "none", qvalueCutoff = 1.0)
+      
+      
+      Enriched_ReacTome<-NULL
+      Enriched_ReacTome_obj<-NULL
+      
+      
+      if(!is.null(ReacTome))
+      {
+        if(nrow(summary(ReacTome))>0)
+        {
+          df_kk<-as.data.frame(summary(ReacTome))[1:8]
+          for(x in 1:length(df_kk[,8]))
+          {
+            temp<-strsplit(df_kk[x,8],"/")
+            id<-which(reg_Mm$ENTREZID %in% temp[[1]] )
+            df_kk[x,8]<-paste(reg_Mm$SYMBOL[id], collapse = '/')
+          }
+          Enriched_ReacTome<-df_kk
+          Enriched_ReacTome_obj<-ReacTome@result
+        }
+        else
+        {
+          Enriched_ReacTome<-data.frame(matrix(NA, nrow = 0, ncol = 8))
+          Enriched_ReacTome_obj<-NULL
+        }
+        
+      }
+      
+    }else{
+      ReacTome <- enrichPathway(gene=module_entrez, organism = "human", pvalueCutoff=0.05, universe = universe_Entrez, pAdjustMethod = "none", qvalueCutoff = 1.0)
+      
+      Enriched_ReacTome<-NULL
+      Enriched_ReacTome_obj<-NULL
+      
+      
+      if(!is.null(ReacTome))
+      {
+        if(nrow(summary(ReacTome))>0)
+        {
+          df_kk<-as.data.frame(summary(ReacTome))[1:8]
+          for(x in 1:length(df_kk[,8]))
+          {
+            temp<-strsplit(df_kk[x,8],"/")
+            id<-which(reg_Hs$ENTREZID %in% temp[[1]] )
+            df_kk[x,8]<-paste(reg_Hs$SYMBOL[id], collapse = '/')
+          }
+          Enriched_ReacTome<-df_kk
+          Enriched_ReacTome_obj<-ReacTome@result
+        }
+        else
+        {
+          Enriched_ReacTome<-data.frame(matrix(NA, nrow = 0, ncol = 8))
+          Enriched_ReacTome_obj<-NULL
+        }
+        
+      }
+    }
+    
+    
+    if(!is.null(Enriched_ReacTome)){
+      
+      #ReacTome$Description <- factor(ReacTome$Description, levels = rev(unique(ReacTome$Description)))
+      
+      # tryCatch(ReacTome_plot <- dotplot(ReacTome, font.size = font_size, title = "Reactome enrichment"))
+      #ReacTome_plot <- dotplot(KEGG, font.size = font_size, title = "KEGG enrichment")
+      ReacTome_plot <- dotplot(ReacTome, font.size = font_size, title = "Reactome enrichment")
+      pushViewport(viewport(layout.pos.col = 2, layout.pos.row = 1))
+      print(ReacTome_plot, newpage = FALSE)
+      popViewport()
+      
+      #addWorksheet(wb, "Reactome")
+      #writeData(wb, 3, Enriched_ReacTome)
+      sheet <- xlsx::createSheet(wb, sheetName = "Reactome")
+      xlsx.addTable(wb, sheet, Enriched_ReacTome)
+    }
+    #ende
+    
+    #enrichDO
+    #start
+    if(orga_type == "mouse"){
+      enrichDO <- enrichDO(gene= module_entrez_mouse_human,
+                           ont           = "DO", 
+                           pvalueCutoff  = 0.05,
+                           pAdjustMethod = "none",
+                           universe      = universe_Entrez_mouse_human, 
+                           qvalueCutoff  = 1.0,
+                           readable      = FALSE)
+      
+      Enriched_enrichDO<-NULL
+      Enriched_enrichDO_obj<-NULL
+      
+      
+      if(!is.null(enrichDO))
+      {
+        if(nrow(summary(enrichDO))>0)
+        {
+          df_kk<-as.data.frame(summary(enrichDO))[1:8]
+          for(x in 1:length(df_kk[,8]))
+          {
+            temp<-strsplit(df_kk[x,8],"/")
+            id<-which(reg_Mm$ENTREZID %in% temp[[1]] )
+            df_kk[x,8]<-paste(reg_Mm$SYMBOL[id], collapse = '/')
+          }
+          Enriched_enrichDO<-df_kk
+          Enriched_enrichDO_obj<-enrichDO@result
+        }
+        else
+        {
+          Enriched_enrichDO<-data.frame(matrix(NA, nrow = 0, ncol = 8))
+          Enriched_enrichDO_obj<-NULL
+        }
+        
+      }
+      
+      
+    }else{
+      enrichDO <- enrichDO(gene= module_entrez,
+                           ont           = "DO", 
+                           pvalueCutoff  = 0.05,
+                           pAdjustMethod = "none",
+                           universe      = universe_Entrez, 
+                           qvalueCutoff  = 1.0,
+                           readable      = FALSE)
+      
+      Enriched_enrichDO<-NULL
+      Enriched_enrichDO_obj<-NULL
+      
+      
+      if(!is.null(enrichDO))
+      {
+        if(nrow(summary(enrichDO))>0)
+        {
+          df_kk<-as.data.frame(summary(enrichDO))[1:8]
+          for(x in 1:length(df_kk[,8]))
+          {
+            temp<-strsplit(df_kk[x,8],"/")
+            id<-which(reg_Hs$ENTREZID %in% temp[[1]] )
+            df_kk[x,8]<-paste(reg_Hs$SYMBOL[id], collapse = '/')
+          }
+          Enriched_enrichDO<-df_kk
+          Enriched_enrichDO_obj<-enrichDO@result
+        }
+        else
+        {
+          Enriched_enrichDO<-data.frame(matrix(NA, nrow = 0, ncol = 8))
+          Enriched_enrichDO_obj<-NULL
+        }
+        
+      }
+      
+    }
+    
+    
+    
+    if(!is.null(Enriched_enrichDO)){
+      enrichDO_plot <- dotplot(enrichDO, font.size = font_size, title = "Disease enrichment")
+      pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 3))
+      print(enrichDO_plot, newpage = FALSE)
+      popViewport()
+      
+      #addWorksheet(wb, "Disease")
+      #writeData(wb, 4, enrichDO@result)
+      sheet <- xlsx::createSheet(wb, sheetName = "Disease")
+      xlsx.addTable(wb, sheet, Enriched_enrichDO)
+    }
+    #ende
+    
+    #enrichGO_dotplot
+    #start
+    if(orga_type == "mouse"){
+      enrichGO <- enrichGO(gene = module_entrez_mouse,
+                           universe = universe_Entrez_mouse,
+                           OrgDb = org.Mm.eg.db,
+                           # keytype = 'ENTREZID',
+                           ont = "BP",
+                           pAdjustMethod = "none",
+                           pvalueCutoff  = 0.01,
+                           qvalueCutoff  = 1,
+                           readable      = T)
+      
+    }else{
+      enrichGO <- enrichGO(gene = module_entrez,
+                           universe = universe_Entrez,
+                           OrgDb = org.Hs.eg.db,
+                           #keytype = "ENTREZID",
+                           ont = "BP",
+                           pAdjustMethod = "none",
+                           pvalueCutoff  = 0.05,
+                           qvalueCutoff  = 1,
+                           readable      = T)
+      
+    }
+    
+    
+    if(!is.null(enrichGO)){
+      enrichGO_plot <- dotplot(enrichGO, font.size = font_size, title = "GO enrichment",showCategory=20)
+      pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 2))
+      print(enrichGO_plot, new = FALSE)
+      popViewport()
+      
+      #addWorksheet(wb, "GO")
+      #writeData(wb, 5, enrichGO@result)
+      sheet <- xlsx::createSheet(wb, sheetName = "GO")
+      xlsx.addTable(wb, sheet, enrichGO@result)
+    }
+    #ende
+    
+    #enrichGO_enrichment_map
+    #start
+    
+    # pushViewport(viewport(layout.pos.col = 2, layout.pos.row = 2))
+    # par(fig = gridFIG(), new = TRUE)
+    # enrichMap(enrichGO, layout=igraph::layout.kamada.kawai, vertex.label.cex = 0.8, n=10)
+    # popViewport()
+    #}
+    #ende
+    # 
+    #TF prediction
+    #start
+    if(orga_type == "mouse"){
+      
+      
+      
+      TFtable <- primo(unlist(list_of_genes), inputType = "geneSymbol", org = "Mm")
+      
+      
+      
+      TFs <- str_split(TFtable$overRepresented[,4], "_")
+      
+      TFs <- do.call(rbind, TFs)[,1]
+      
+      TFs <- str_split(TFs, "::")
+      
+      TFs <- do.call(rbind, TFs)
+      
+      if(grepl(":", TFs)&&!is.null(TFs)){
+        
+        TFs <- c(TFs[,1],TFs[,2])
+        
+      }
+      
+      TFs <-unique(TFs)
+      
+      TFs <- str_to_title(TFs, locale = "")
+      
+      
+      
+    }else{
+      
+      TFtable <- primo(unlist(list_of_genes), inputType = "geneSymbol", org = "Hs")
+      
+      
+      
+      TFs <- str_split(TFtable$overRepresented[,4], "_")
+      
+      TFs <- do.call(rbind, TFs)[,1]
+      
+      TFs <- str_split(TFs, "::")
+      
+      TFs <- do.call(rbind, TFs)
+      
+      if(grepl(":", TFs)&&!is.null(TFs)){
+        
+        TFs <- c(TFs[,1],TFs[,2])
+        
+      }
+      
+      TFs <-unique(TFs)
+      
+      TFs <- str_to_upper(TFs, locale = "")
+      
+    }  
+    
+    
+    
+    
+    
+    if(!is.null(TFs)){
+      
+      
+      
+      #addWorksheet(wb, "TFoverrepresented")
+      
+      #writeData(wb, 6, TFtable$overRepresented)
+      
+      
+      
+      
+      
+      
+      
+      if(length(TFs) != 0L){
+        
+        
+        
+        sheet <- xlsx::createSheet(wb, sheetName = "TFoverrepresented")
+        
+        xlsx.addTable(wb, sheet, TFtable$overRepresented)
+        
+        
+        
+        TFS_intersect <- intersect(TFs,colnames(normdata))
+        
+        
+        
+        if(length(TFS_intersect) != 0L){
+          
+          
+          
+          TFs_matrix_all_plot <- normdata[,c("merged",TFS_intersect)]
+          
+          
+          
+          TFs_matrix_all_plot.melt <- melt(TFs_matrix_all_plot, id="merged")
+          
+          # calculate means
+          
+          #require(dplyr)
+          
+          TFs_matrix_all_plot.melt %>% group_by(merged,variable) -> TFs_matrix_all_plot.melt.mean
+          
+          TFs_matrix_all_plot.melt.mean$value<-as.numeric(sub(",", ".", TFs_matrix_all_plot.melt.mean$value, fixed = TRUE))
+          
+          TFs_matrix_all_plot.melt.mean %>% summarise(mean=mean(value)) -> TFs_matrix_all_plot.melt.mean
+          
+          
+          
+          condis <- unique(normdata$merged)
+          
+          TFs_matrix_all_plot.melt.mean$merged <- factor(TFs_matrix_all_plot.melt.mean$merged,levels = condis)
+          
+          
+          
+          
+          
+       
+          
+          
+          xlsx.addPlot(wb, sheet, plotFunction())
+          
+        }
+        
+        
+        
+        TFS_intersect <- intersect(TFs,colnames(normdata))
+        
+        
+        
+        if(length(TFS_intersect) != 0L){
+          
+          
+          
+          
+          
+          TFs_matrix <- normdata[,c("merged",head(TFS_intersect,4))]
+          
+          
+          
+          TFs_matrix.melt <- melt(TFs_matrix, id="merged")        # calculate means
+          
+          #require(dplyr)
+          
+          
+          
+          TFs_matrix.melt %>% group_by(merged,variable) -> TFs_matrix.melt.mean
+          
+          TFs_matrix.melt.mean$value<-as.numeric(sub(",", ".", TFs_matrix.melt.mean$value, fixed = TRUE))
+          
+          TFs_matrix.melt.mean %>% summarise(mean=mean(value)) -> TFs_matrix.melt.mean
+          
+          condis <- unique(normdata$merged)
+          
+          #TFs_matrix.melt.mean$merged <- factor(TFs_matrix.melt.mean$merged,levels = condis)
+          
+          
+          
+          TF_plot <- ggplot(TFs_matrix.melt.mean,aes(x=variable,y=mean,fill=merged)) +
+            
+            geom_bar(stat="identity",position = "dodge") +
+            
+            facet_wrap(~variable,scales = "free")
+          
+          
+          
+          
+          
+          pushViewport(viewport(layout.pos.col = 2, layout.pos.row = 3))
+          
+          print(TF_plot, newpage = FALSE)
+          
+          popViewport()
+          
+        }
+        
+      }
+      
+    }
+    
+    
+    
+    saveWorkbook(wb, paste(cluster_folder,"/ClusterProfiler_",colnames(cluster_genes_original)[id_it],".xlsx",sep=""))
+    
+    dev.off()
+    
+    
+    
+  }
+  
+  dev.off()
+  
+}
+
+
