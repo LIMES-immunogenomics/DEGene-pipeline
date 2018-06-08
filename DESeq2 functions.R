@@ -1420,6 +1420,7 @@ Dea_analysis <- function(annotation_file=annotation,
       res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
                                  res=res_deseq_lfc)
       res_deseq_lfc <- as.data.frame(res_deseq_lfc)
+      res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
       list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
     }
     if (IHW_option==F) {
@@ -1430,6 +1431,7 @@ Dea_analysis <- function(annotation_file=annotation,
       res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
                                  res=res_deseq_lfc)
       res_deseq_lfc <- as.data.frame(res_deseq_lfc)
+      res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
       list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
     } 
   DE_object@results <- list_conditions
@@ -1463,7 +1465,6 @@ Dea_analysis <- function(annotation_file=annotation,
   DE_objects[[paste(j)]] <- assign(  paste(j), DE_object)}
   return(DE_objects)
 }
-
 multiplot<-function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   
