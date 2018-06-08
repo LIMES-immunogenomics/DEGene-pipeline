@@ -327,6 +327,89 @@ DE_object <- Dea_analysis(annotation_file=annotation,
                           condition="merged",
                           design_variable=design)
 
+##############################################################################
+##### Create an Excel file with the different DEgenes between conditions ######
+##############################################################################
+
+# creates an Excel sheet with the different DEgenes
+# Comparisons against suspension_wt
+for (i in 1:length(DE_object$suspension_wt@results)) {
+  if(i==1){
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = F)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+  else{
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = T)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+}
+#comparisons against suspension_KO
+for (i in 1:length(DE_object$suspension_wt@results)) {
+  if(i==1){
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = F)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+  else{
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = T)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+}
+#Comparison against fibronectin_wt
+for (i in 1:length(DE_object$suspension_wt@results)) {
+  if(i==1){
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = F)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+  else{
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = T)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+}
+#Comparison against gelatin_wt
+for (i in 1:length(DE_object$suspension_wt@results)) {
+  if(i==1){
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = F)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+  else{
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`up-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"up-regulated",sep="_"),
+               col.names = T,append = T)
+    write.xlsx(DE_object$suspension_wt@results[[i]][DE_object$suspension_wt@DE_genes[[i]]$`down-regulated genes`,],
+               file = "E:/Nico/Final general workflow DESeq2/DEgenes_Cyth2_KO.xlsx", sheetName = paste(names(DE_object$suspension_wt@results)[[i]],"down-regulated",sep="_"),
+               col.names = T,append = T)
+  }
+}
+
+
 names(DE_object$CON_GM@results)
 ##### Get shrunken lfc object as data frame ####
 
@@ -454,11 +537,6 @@ venn.diagram(list(DE_object$CON_GM@DE_genes$CON_WM$`down-regulated genes`,
              fill = anno[-c(1)],
              alpha = 0.5,
              main = "Venn Diagram of downregulated genes")
-
-
-##############################################
-##### Not gone over yet #####
-##############################################
 
 
 #### Defining all DE genes ####
