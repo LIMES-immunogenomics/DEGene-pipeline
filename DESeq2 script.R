@@ -116,6 +116,9 @@ design <- design(dds)
 # In case you need them for a different analysis
 normalized_counts <- counts(dds, normalized=T)
 
+# Save normalized counts as excel sheet
+write.xlsx(normalized_counts, "E:/Nico/Final general workflow DESeq2/Normalized counts Cyth2 KO.xlsx", append=F, col.names = T)
+
 #### Quality control ####
 # Samples distribution before and after normalization 
 # using log2 data to plot
