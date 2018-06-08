@@ -391,7 +391,7 @@ multiplot(plotlist = list_volcano,cols = 3)
 # Volcano plot displaying name of a gene or a gene list
 
 # Define and plot top genes for all conditions
-
+# condi=the comparison against your control that you arre interested in
 Top_10_CON_WM_up <- DE_genes_Top_up(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="CON_WM")
 Top_10_CON_WM_up
 
