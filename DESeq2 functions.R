@@ -1407,64 +1407,64 @@ Dea_analysis <- function(annotation_file=annotation,
     #Define the levels that should be compared against the control
     cond_list <- levels(anno_DE_obj[[condition]])
     cond_list<-cond_list[cond_list != j]
-  # Define parameters
-  # Create results table as data.frame
-  
-  for (i in cond_list){
-    if (IHW_option==T) {
-      res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
-                               lfcThreshold = lfc_Threshold,
-                               alpha = alpha_option,
-                               filterFun = ihw,
-                               altHypothesis = "greaterAbs")
-      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
-                                 res=res_deseq_lfc)
-      res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-      res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
-      list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
-    }
-    if (IHW_option==F) {
-      res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
-                               lfcThreshold = lfc_Threshold,
-                               alpha = alpha_option,
-                               altHypothesis = "greaterAbs")
-      res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
-                                 res=res_deseq_lfc)
-      res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-      res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
-      list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
-    } 
-  DE_object@results <- list_conditions
-    list_DE_genes <- list(rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                                 list_conditions[[paste(i)]]$padj<alpha_option&
-                                                                 list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]),
-                          rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                                 list_conditions[[paste(i)]]$padj<alpha_option&
-                                                                 list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
-    names(list_DE_genes) = c(paste("up-regulated genes"), 
-                             paste("down-regulated genes"))
-    list_DE_genes_names[[paste(i)]] <- assign(  paste(i), list_DE_genes )
-    list_DE_sum <- list(nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                           list_conditions[[paste(i)]]$padj<alpha_option&
-                                                           list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]) ,
-                        nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
-                                                           list_conditions[[paste(i)]]$padj<alpha_option&
-                                                           list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+    # Define parameters
+    # Create results table as data.frame
+    
+    for (i in cond_list){
+      if (IHW_option==T) {
+        res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
+                                 lfcThreshold = lfc_Threshold,
+                                 alpha = alpha_option,
+                                 filterFun = ihw,
+                                 altHypothesis = "greaterAbs")
+        res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
+                                   res=res_deseq_lfc)
+        res_deseq_lfc <- as.data.frame(res_deseq_lfc)
+        res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
+        list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
+      }
+      if (IHW_option==F) {
+        res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
+                                 lfcThreshold = lfc_Threshold,
+                                 alpha = alpha_option,
+                                 altHypothesis = "greaterAbs")
+        res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
+                                   res=res_deseq_lfc)
+        res_deseq_lfc <- as.data.frame(res_deseq_lfc)
+        res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
+        list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
+      } 
+      DE_object@results <- list_conditions
+      list_DE_genes <- list(rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                                   list_conditions[[paste(i)]]$padj<alpha_option&
+                                                                   list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]),
+                            rownames(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                                   list_conditions[[paste(i)]]$padj<alpha_option&
+                                                                   list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+      names(list_DE_genes) = c(paste("up-regulated genes"), 
+                               paste("down-regulated genes"))
+      list_DE_genes_names[[paste(i)]] <- assign(  paste(i), list_DE_genes )
+      list_DE_sum <- list(nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                             list_conditions[[paste(i)]]$padj<alpha_option&
+                                                             list_conditions[[paste(i)]]$log2FoldChange>lfc_Threshold,]) ,
+                          nrow(list_conditions[[paste(i)]][!is.na(list_conditions[[paste(i)]]$padj)&
+                                                             list_conditions[[paste(i)]]$padj<alpha_option&
+                                                             list_conditions[[paste(i)]]$log2FoldChange<(-lfc_Threshold),]))
+      df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
+                                row.names = c(paste("up-regulated padj. <", alpha_option, sep = "_"), 
+                                              paste("down-regulated padj. <", alpha_option, sep = "_")))
+      list_test_all[[paste(i)]] <- assign(  paste(i), df_DE_genes )
     df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
-                              row.names = c(paste("up-regulated padj. <", alpha_option, sep = "_"), 
-                                            paste("down-regulated padj. <", alpha_option, sep = "_")))
-    list_test_all[[paste(i)]] <- assign(  paste(i), df_DE_genes )
-  }
-  df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
-                            row.names = c(paste("up-regulated padj. <", alpha_option, sep = " "), 
-                                          paste("down-regulated padj. <", alpha_option, sep = " ")))
-  DE_object@DE_genes <- list_DE_genes_names
-  df <- do.call("cbind", list_test_all)
-  colnames(df) <- levels(anno_DE_obj[[condition]])[-1]
-  DE_object@Number_DE_genes <- df
-  DE_objects[[paste(j)]] <- assign(  paste(j), DE_object)}
+                              row.names = c(paste("up-regulated padj. <", alpha_option, sep = " "), 
+                                            paste("down-regulated padj. <", alpha_option, sep = " ")))
+    DE_object@DE_genes <- list_DE_genes_names}
+    df <- do.call("cbind", list_test_all)
+    colnames(df) <- cond_list
+    DE_object@Number_DE_genes <- df
+    DE_objects[[paste(j)]] <- assign(  paste(j), DE_object)}
   return(DE_objects)
 }
+
 multiplot<-function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   
@@ -1596,12 +1596,11 @@ DE_genes_plot <- function(DE_genes_df = DE_object@Number_DE_genes, DE_obj=DE_obj
   ##Add gene numbers to the bars
   Geom_bar_DE + geom_text(aes(label = value), size = 3,
                           hjust = 0.5, vjust = 3, position="stack")+
-    labs(title="Number of DE genes", 
+    labs(title=c(paste0("Number of DE genes compared against ", DE_obj@parameters[[5]])), 
          subtitle= c(paste0("padj < ", DE_obj@parameters[[3]], 
                             ", Log2FC threshold: ", DE_obj@parameters[[4]])))+
     ylab("Number of genes")
 }
-
 
 Volcano_plot <- function(input_file=DE_object, condition="CpG", x_limit=c(-10,10), y_limit=c(NA,NA)){
   df <- as.data.frame(input_file@results[[condition]])
