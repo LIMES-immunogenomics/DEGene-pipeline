@@ -2,6 +2,9 @@
 
 This pipeline includes the General workflow to find differentially expressed genes with DESeq starting from Kallisto files or Gene count tables including helpful plots.
 
+# 19.06.2018:
+Changed the n.sv command
+
 # 11.06.2018:
 1) Dea_analysis: now the DEgene_number data-frame displays the right names.
 2) DE_genes_plot now has the comparison of the conditions in the heading.
