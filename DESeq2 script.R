@@ -234,7 +234,8 @@ mod0 <- model.matrix(~   1, colData(dds))
 # n.sv will define how many itterations SVA will perform
 
 # find number of sva
-n.sv<-num.sv(dat=assay(rld),mod,method="leek")
+dat<-counts(dds, normalized=T)
+n.sv<-num.sv(dat,mod,method="leek")
 svseq_NULL<- sva(assay(rld), mod, mod0, n.sv = 7)
 
 #svaobj <-svaseq(assay(rld), mod, mod0, n.sv=7)
