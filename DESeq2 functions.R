@@ -1605,14 +1605,13 @@ DE_genes_plot <- function(DE_genes_df = DE_object@Number_DE_genes, DE_obj=DE_obj
 
 Volcano_plot <- function(input_file=DE_object, condition="CpG", x_limit=c(-10,10), y_limit=c(NA,NA)){
   df <- as.data.frame(input_file@results[[condition]])
-  df$declogp <- -log10(df$padj)
   
-  ggplot(df, aes(x=df$log2FoldChange, y=df$declogp))+
-    geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]) | 
-                               df$log2FoldChange>input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]),"red","grey"))+
-    scale_y_discrete(expression('-log'['10']*' adjusted p-value'), limits=y_limit)+
+  ggplot(df, aes(x=df$log2FoldChange, y=log10(df$padj)))+
+    geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$padj<input_file@parameters[[3]] | 
+                               df$log2FoldChange>input_file@parameters[[4]]&df$padj<input_file@parameters[[3]],"red","grey"))+
+   
     scale_x_discrete(expression('Fold change log'['2']), limits=x_limit)+
-    coord_cartesian(xlim = x_limit)+
+    scale_y_reverse(expression('-log'['10']*' adjusted p-value'), limits=y_limit)+
     labs(title=paste(condition, "VS. ",input_file@parameters[[5]]))+
     theme(panel.background = element_rect(fill=NA, color = "black"),
           plot.background = element_blank(),
@@ -1628,22 +1627,21 @@ Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG",
                                       gene="Tnf",size_def=3, x_limit=c(-10,10),
                                       y_limit=c(NA,NA)){
   df <- as.data.frame(input_file@results[[condition]])
-  df$declogp <- -log(df$padj)
   
-  ggplot(df, aes(x=df$log2FoldChange, y=df$declogp))+
-    geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]) | 
-                               df$log2FoldChange>input_file@parameters[[4]]&df$declogp>10^-(input_file@parameters[[3]]),"red","grey"))+
-    scale_y_discrete(expression('-log'['10']*' p-value'), limits = y_limit)+
+  ggplot(df, aes(x=df$log2FoldChange, y=log10(df$padj)))+
+    geom_point(colour=ifelse(df$log2FoldChange< -input_file@parameters[[4]]&df$padj<input_file@parameters[[3]] | 
+                               df$log2FoldChange>input_file@parameters[[4]]&df$padj<input_file@parameters[[3]],"red","grey"))+
+    scale_y_reverse(expression('-log'['10']*' adjusted p-value'), limits=y_limit)+
     scale_x_discrete(expression('Fold change log'['2']),limits = x_limit)+
     geom_text(data=df[gene,], mapping=aes(x=df[gene,][,"log2FoldChange"], 
-                                          y=df[gene,][,"declogp"], 
+                                          y=log10(df[gene,][,"padj"]), 
                                           label=gene),
               size=size_def, hjust=0.5, vjust=1)+
     geom_point(data=df[gene,], mapping=aes(x=df[gene,][,"log2FoldChange"], 
-                                           y=df[gene,][,"declogp"]), 
+                                           y=log10(df[gene,][,"padj"])), 
                colour="blue")+
     
-    labs(title=paste(condition, "VS. ",input_file@parameters[[6]]))+
+    labs(title=paste(condition, "VS. ",input_file@parameters[[5]]))+
     theme(panel.background = element_rect(fill=NA, color = "black"),
           plot.background = element_blank(),
           legend.background = element_blank(),
@@ -2146,31 +2144,14 @@ reorder_cormat <- function(cormat){
   hc <- hclust(dd)
   cormat <-cormat[hc$order, hc$order]
 }
-DE_genes_Top <- function(ntop=500, condi="NULL", input_file=DE_object$CON_GM, condition=annotation$condition){
-  if (condi=="NULL"){
-    cond_list <- list()
-    list_top_DE <- list()
-    cond_list <- names(input_file@results)
-    for (i in cond_list){
-      select <- order(input_file@results[[i]]$padj, decreasing = F, na.last=T )[seq_len(min(ntop, length(input_file@results[[i]]$padj)))]
-      Top500_DE_genes <- rownames(input_file@results[[i]][select,])
-      list_top_DE[[paste(i)]] <- assign(paste(i),Top500_DE_genes )}
-    list_top_DE<-do.call(c, list_top_DE)
-    list_top_DE <- unique(list_top_DE)
-  }
-  else {
-    select <- order(input_file@results[[condi]]$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(DE_object@results[[condi]]$padj)))]
-    
-    Top500_DE_genes <- input_file@results[[condi]][select,]
-  }
-}
+
 DE_genes_Top_up <- function(ntop=500, condi="NULL",input_file=DE_object$CON_GM, condition="merged"){
   if (condi=="NULL"){
     cond_list <- list()
     list_top_DE <- list()
     cond_list <- names(input_file@results)
     for (i in cond_list){
-      df<-input_file@results[[i]][input_file@results[[i]]$log2FoldChange>0,]
+      df<-input_file@results[[i]][input_file@results[[i]]$log2FoldChange>input_file@parameters[[4]],]
       select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
       
       Top500_DE_genes <- rownames(df[select,])
@@ -2179,20 +2160,20 @@ DE_genes_Top_up <- function(ntop=500, condi="NULL",input_file=DE_object$CON_GM, 
     list_top_DE <- unique(list_top_DE)
   }
   else {
-    df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange>0,]
+    df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange>input_file@parameters[[4]],]
     select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
     
     Top500_DE_genes <- rownames(df[select,])
   }
 }
 
-DE_genes_Top_down <- function(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="NULL"){
+DE_genes_Top_down <- function(ntop=500, condi="NULL",input_file=DE_object$CON_GM, condition="merged"){
   if (condi=="NULL"){
     cond_list <- list()
     list_top_DE <- list()
     cond_list <- names(input_file@results)
     for (i in cond_list){
-      df<-input_file@results[[i]][input_file@results[[i]]$log2FoldChange<0,]
+      df<-input_file@results[[i]][input_file@results[[i]]$log2FoldChange<(-input_file@parameters[[4]]),]
       select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
       
       Top500_DE_genes <- rownames(df[select,])
@@ -2201,9 +2182,10 @@ DE_genes_Top_down <- function(ntop=10, input_file=DE_object$CON_GM,condition="CO
     list_top_DE <- unique(list_top_DE)
   }
   else {
-    df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange<0,]
+    df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange<(-input_file@parameters[[4]]),]
     select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
     
     Top500_DE_genes <- rownames(df[select,])
   }
 }
+
