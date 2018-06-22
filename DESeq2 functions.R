@@ -62,109 +62,109 @@ Checking_normalized_counts <- function(raw_data=count_matrix,
                                        anno_colour=anno,
                                        condition=condition){
   if (is.null(anno_colour)==F){
-  if(scaling_opt=="log2"){ 
-    dat <- stack(as.data.frame(log2(raw_data+1)))
-    colnames(dat) <- c("Reads", "Sample")
-    dat$new <- annotation[[paste0(condition)]][dat$Sample]
-    legend_title=paste0(condition)
-    raw_counts_log2_boxplots <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
-      geom_boxplot()+
-      labs(title="Unnormalized reads")+
-      ylab("Reads (log2)")+
-      scale_fill_manual(values=anno_colour,name=legend_title)+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            plot.background = element_blank(),
-            aspect.ratio = 0.5,
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.text.x = element_text(angle = 90, vjust=0.5),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            axis.title.x = element_blank(),
-            legend.key = element_rect(fill = "white"))
-    
-    
-    normalized_data <- stack(as.data.frame(log2(counts(normalized_source, normalized=T)+1)))
-    normalized_data$values <- as.integer(normalized_data$values)
-    colnames(normalized_data) <- c("Reads", "Sample")
-    normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
-    legend_title=paste0(condition)
-    normalized_counts_log2_boxplots <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
-      geom_boxplot()+
-      labs(title="Normalized reads")+
-      scale_fill_manual(values=anno_colour,name=legend_title)+
-      ylab("Reads (log2)")+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            plot.background = element_blank(),
-            aspect.ratio = 0.5,
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.text.x = element_text(angle = 90, vjust=0.5),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title.x = element_blank(),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white"))
-    
-    multiplot(raw_counts_log2_boxplots, normalized_counts_log2_boxplots, cols=2)
-  }
-  else{
-    # using untransformed data to plot
-    dat <- stack(as.data.frame(raw_data+1))
-    colnames(dat) <- c("Reads", "Sample")
-    dat$new <- annotation[[paste0(condition)]][dat$Sample]
-    legend_title=paste0(condition)
-    raw_counts_boxplot <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
-      geom_boxplot()+
-      scale_y_log10()+
-      labs(title="Unnormalized reads")+
-      scale_fill_manual(values=anno_colour,name=legend_title)+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            plot.background = element_blank(),
-            aspect.ratio = 0.5,
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.text.x = element_text(angle = 90, vjust=0.5),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            axis.title.x = element_blank(),
-            legend.key = element_rect(fill = "white"))
-    
-    
-    normalized_data <- stack(as.data.frame(counts(normalized_source, normalized=T)+1))
-    normalized_data$values <- as.integer(normalized_data$values)
-    colnames(normalized_data) <- c("Reads", "Sample")
-    normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
-    legend_title=paste0(condition)
-    normalized_counts_boxplot <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
-      geom_boxplot()+
-      scale_y_log10()+
-      labs(title="Normalized reads")+
-      scale_fill_manual(values=anno_colour,name=legend_title)+
-      theme(panel.background = element_rect(fill=NA, color = "black"),
-            plot.background = element_blank(),
-            aspect.ratio = 0.5,
-            legend.background = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            strip.background = element_rect(fill = NA, color = "black"),
-            axis.text.x = element_text(angle = 90, vjust=0.5),
-            axis.line = element_line(colour = "black", size = 1),
-            axis.text = element_text(colour = "black", size = 10, face = "bold"),
-            axis.ticks = element_line(color = "black",size = 1),
-            axis.title.x = element_blank(),
-            axis.title = element_text(colour = "black", size = 10, face = "bold"),
-            legend.key = element_rect(fill = "white"))
-    
-    multiplot(raw_counts_boxplot, normalized_counts_boxplot, cols=2)
-  }}
+    if(scaling_opt=="log2"){ 
+      dat <- stack(as.data.frame(log2(raw_data+1)))
+      colnames(dat) <- c("Reads", "Sample")
+      dat$new <- annotation[[paste0(condition)]][dat$Sample]
+      legend_title=paste0(condition)
+      raw_counts_log2_boxplots <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        labs(title="Unnormalized reads")+
+        ylab("Reads (log2)")+
+        scale_fill_manual(values=anno_colour,name=legend_title)+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              axis.title.x = element_blank(),
+              legend.key = element_rect(fill = "white"))
+      
+      
+      normalized_data <- stack(as.data.frame(log2(counts(normalized_source, normalized=T)+1)))
+      normalized_data$values <- as.integer(normalized_data$values)
+      colnames(normalized_data) <- c("Reads", "Sample")
+      normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
+      legend_title=paste0(condition)
+      normalized_counts_log2_boxplots <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        labs(title="Normalized reads")+
+        scale_fill_manual(values=anno_colour,name=legend_title)+
+        ylab("Reads (log2)")+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title.x = element_blank(),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white"))
+      
+      multiplot(raw_counts_log2_boxplots, normalized_counts_log2_boxplots, cols=2)
+    }
+    else{
+      # using untransformed data to plot
+      dat <- stack(as.data.frame(raw_data+1))
+      colnames(dat) <- c("Reads", "Sample")
+      dat$new <- annotation[[paste0(condition)]][dat$Sample]
+      legend_title=paste0(condition)
+      raw_counts_boxplot <- ggplot(dat, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        scale_y_log10()+
+        labs(title="Unnormalized reads")+
+        scale_fill_manual(values=anno_colour,name=legend_title)+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              axis.title.x = element_blank(),
+              legend.key = element_rect(fill = "white"))
+      
+      
+      normalized_data <- stack(as.data.frame(counts(normalized_source, normalized=T)+1))
+      normalized_data$values <- as.integer(normalized_data$values)
+      colnames(normalized_data) <- c("Reads", "Sample")
+      normalized_data$new <- annotation[[paste0(condition)]][normalized_data$Sample]
+      legend_title=paste0(condition)
+      normalized_counts_boxplot <- ggplot(normalized_data, aes(x=Sample,y=Reads, fill=new))+
+        geom_boxplot()+
+        scale_y_log10()+
+        labs(title="Normalized reads")+
+        scale_fill_manual(values=anno_colour,name=legend_title)+
+        theme(panel.background = element_rect(fill=NA, color = "black"),
+              plot.background = element_blank(),
+              aspect.ratio = 0.5,
+              legend.background = element_blank(),
+              plot.title = element_text(face = "bold", hjust = 0.5),
+              strip.background = element_rect(fill = NA, color = "black"),
+              axis.text.x = element_text(angle = 90, vjust=0.5),
+              axis.line = element_line(colour = "black", size = 1),
+              axis.text = element_text(colour = "black", size = 10, face = "bold"),
+              axis.ticks = element_line(color = "black",size = 1),
+              axis.title.x = element_blank(),
+              axis.title = element_text(colour = "black", size = 10, face = "bold"),
+              legend.key = element_rect(fill = "white"))
+      
+      multiplot(raw_counts_boxplot, normalized_counts_boxplot, cols=2)
+    }}
   #option if no colors given
   else{
     if(scaling_opt=="log2"){ 
@@ -370,34 +370,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
   color_title<-paste0(color_obj)
   if (continuous==F){
     if(is.null(anno_colour)){
-    if(shape_opt=="NULL"){
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =point_size) +
-        scale_color_discrete(name=color_title)+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
-    }
-    else{
-      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-        legend_title <- paste0(shape_opt)
-        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+      if(shape_opt=="NULL"){
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
           geom_point(size =point_size) +
           scale_color_discrete(name=color_title)+
-          scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
@@ -415,30 +391,54 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
                 legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
-        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-        legend_title <- paste0(shape_opt)
-        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =point_size) +
-          scale_color_discrete(name=color_title)+
-          scale_shape_manual(values=df$x,name=legend_title)+
-          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-          coord_fixed()+
-          labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
-                aspect.ratio = 1,
-                plot.background = element_blank(),
-                legend.background = element_blank(),
-                plot.title = element_text(face = "bold", hjust = 0.5),
-                strip.background = element_rect(fill = NA, color = "black"),
-                axis.line = element_line(colour = "black", size = 1),
-                axis.text = element_text(colour = "black", size = 10, face = "bold"),
-                axis.ticks = element_line(color = "black",size = 1),
-                axis.title = element_text(colour = "black", size = 10, face = "bold"),
-                legend.key = element_rect(fill = "white", colour = "black"))
-        
-      }
-    }}
+        if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_discrete(name=color_title)+
+            scale_shape(name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+        }
+        else{
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_discrete(name=color_title)+
+            scale_shape_manual(values=df$x,name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+          
+        }
+      }}
     else{
       if(shape_opt=="NULL"){
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
@@ -508,7 +508,7 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
                   legend.key = element_rect(fill = "white", colour = "black"))
           
         }
-    }}}
+      }}}
   else{
     color_obj<-as.integer(annotation[[paste0(color_obj)]])
     if(shape_opt=="NULL"){
@@ -637,7 +637,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
       if(shape_opt=="NULL"){
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
           geom_point(size =point_size) +
-          scale_color_discrete()+
+          scale_color_discrete(name=color_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
@@ -660,7 +660,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           legend_title <- paste0(shape_opt)
           pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
             geom_point(size =point_size) +
-            scale_color_discrete()+
+            scale_color_discrete(name=color_title)+
             scale_shape(name=legend_title)+
             xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -683,7 +683,7 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           legend_title <- paste0(shape_opt)
           pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
             geom_point(size =point_size) +
-            scale_color_discrete()+
+            scale_color_discrete(name=color_title)+
             scale_shape_manual(values=df$x,name=legend_title)+
             xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
@@ -703,32 +703,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           
         }}}
     else{
-      pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
-        geom_point(size =point_size) +
-        scale_color_manual(values=anno_colour, name=color_title)+
-        xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-        ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-        coord_fixed()+
-        labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
-              aspect.ratio = 1,
-              plot.background = element_blank(),
-              legend.background = element_blank(),
-              plot.title = element_text(face = "bold", hjust = 0.5),
-              strip.background = element_rect(fill = NA, color = "black"),
-              axis.line = element_line(colour = "black", size = 1),
-              axis.text = element_text(colour = "black", size = 10, face = "bold"),
-              axis.ticks = element_line(color = "black",size = 1),
-              axis.title = element_text(colour = "black", size = 10, face = "bold"),
-              legend.key = element_rect(fill = "white", colour = "black"))
-    }
-      if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-        legend_title <- paste0(shape_opt)
-        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+      if(shape_opt=="NULL"){
+        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition)) +
           geom_point(size =point_size) +
           scale_color_manual(values=anno_colour, name=color_title)+
-          scale_shape(name=legend_title)+
           xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
@@ -746,32 +724,57 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
                 legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
-        pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
-        legend_title <- paste0(shape_opt)
-        pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
-          geom_point(size =point_size) +
-          scale_color_manual(values=anno_colour, name=color_title)+
-          scale_shape_manual(values=df$x,name=legend_title)+
-          xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
-          ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
-          coord_fixed()+
-          labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
-                aspect.ratio = 1,
-                plot.background = element_blank(),
-                legend.background = element_blank(),
-                plot.title = element_text(face = "bold", hjust = 0.5),
-                strip.background = element_rect(fill = NA, color = "black"),
-                axis.line = element_line(colour = "black", size = 1),
-                axis.text = element_text(colour = "black", size = 10, face = "bold"),
-                axis.ticks = element_line(color = "black",size = 1),
-                axis.title = element_text(colour = "black", size = 10, face = "bold"),
-                legend.key = element_rect(fill = "white", colour = "black"))
-        
-      }}
+        if (length(levels(annotation[[paste0(shape_opt)]]))<6){
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_manual(values=anno_colour, name=color_title)+
+            scale_shape(name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+        }
+        else{
+          pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
+          legend_title <- paste0(shape_opt)
+          pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=condition, shape=new)) +
+            geom_point(size =point_size) +
+            scale_color_manual(values=anno_colour, name=color_title)+
+            scale_shape_manual(values=df$x,name=legend_title)+
+            xlab(paste0("PC ",PC_1, ": ", percentVar[1], "% variance")) +
+            ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
+            coord_fixed()+
+            labs(title="PCA")+
+            theme(panel.background = element_rect(fill=NA, color = "black"),
+                  aspect.ratio = 1,
+                  plot.background = element_blank(),
+                  legend.background = element_blank(),
+                  plot.title = element_text(face = "bold", hjust = 0.5),
+                  strip.background = element_rect(fill = NA, color = "black"),
+                  axis.line = element_line(colour = "black", size = 1),
+                  axis.text = element_text(colour = "black", size = 10, face = "bold"),
+                  axis.ticks = element_line(color = "black",size = 1),
+                  axis.title = element_text(colour = "black", size = 10, face = "bold"),
+                  legend.key = element_rect(fill = "white", colour = "black"))
+          
+        }
+      }}}
   else{
+    color_obj<-as.integer(annotation[[paste0(color_obj)]])
     if(shape_opt=="NULL"){
-      color_obj<-as.integer(annotation[[paste0(color_obj)]])
       pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj)) +
         geom_point(size =point_size) +
         scale_color_gradientn(colours = colour_gradient,name=color_title)+
@@ -793,7 +796,6 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
     }
     else{
       if (length(levels(annotation[[paste0(shape_opt)]]))<6){
-        color_obj<-as.integer(annotation[[paste0(color_obj)]])
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
@@ -817,7 +819,6 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
                 legend.key = element_rect(fill = "white", colour = "black"))
       }
       else{
-        color_obj<-as.integer(annotation[[paste0(color_obj)]])
         pcaData["new"]<- as.character(annotation[[paste0(shape_opt)]])
         legend_title <- paste0(shape_opt)
         pca_plot <- ggplot(pcaData, aes(x = PC_1, y = PC_2,colour=color_obj, shape=new)) +
@@ -1032,7 +1033,7 @@ Limma_batch <- function(rld_obj=rld,
           
         }}
     }
-    }
+  }
   if(continuous==T){
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[paste0(color_obj)]])
@@ -1291,7 +1292,7 @@ Limma_batch_sva <- function(rld_obj=rld,
         }# end of length
       }# end of shape
     }
-      }#continuous ends here
+  }#continuous ends here
   else{
     if(shape_opt=="NULL"){
       color_obj<-as.integer(annotation[[color_obj]])
@@ -1454,10 +1455,10 @@ Dea_analysis <- function(annotation_file=annotation,
                                 row.names = c(paste("up-regulated padj. <", alpha_option, sep = "_"), 
                                               paste("down-regulated padj. <", alpha_option, sep = "_")))
       list_test_all[[paste(i)]] <- assign(  paste(i), df_DE_genes )
-    df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
-                              row.names = c(paste("up-regulated padj. <", alpha_option, sep = " "), 
-                                            paste("down-regulated padj. <", alpha_option, sep = " ")))
-    DE_object@DE_genes <- list_DE_genes_names}
+      df_DE_genes <- data.frame(matrix(unlist(list_DE_sum), nrow=2, byrow=T),stringsAsFactors=FALSE, 
+                                row.names = c(paste("up-regulated padj. <", alpha_option, sep = " "), 
+                                              paste("down-regulated padj. <", alpha_option, sep = " ")))
+      DE_object@DE_genes <- list_DE_genes_names}
     df <- do.call("cbind", list_test_all)
     colnames(df) <- cond_list
     DE_object@Number_DE_genes <- df
@@ -1678,19 +1679,19 @@ cluster_Top_genes_output <- function(object=rld_df, dds_obj=dds, anno_color,
   select <- order(rv, decreasing=TRUE)[seq_len(min(ntop, length(rv)))]
   if(is.null(second_annotation)==F){
     df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
-  colnames(df_) <- c(first_annotation,second_annotation)
-  row.names(df_) <- colnames(object)
-  
-  map <- pheatmap(object[select,],
-                  cluster_rows=TRUE, cluster_cols=T,
-                  clustering_distance_rows="correlation",
-                  clustering_distance_cols="correlation",
-                  show_rownames=F, show_colnames = TRUE,
-                  scale = "row",
-                  main = heatmap_title,
-                  annotation_col=df_,
-                  annotation_colors = anno_color) 
-  name_output <<- object[map$tree_row$order,]
+    colnames(df_) <- c(first_annotation,second_annotation)
+    row.names(df_) <- colnames(object)
+    
+    map <- pheatmap(object[select,],
+                    cluster_rows=TRUE, cluster_cols=T,
+                    clustering_distance_rows="correlation",
+                    clustering_distance_cols="correlation",
+                    show_rownames=F, show_colnames = TRUE,
+                    scale = "row",
+                    main = heatmap_title,
+                    annotation_col=df_,
+                    annotation_colors = anno_color) 
+    name_output <<- object[map$tree_row$order,]
   }
   else{
     df_ <- as.data.frame(colData(dds_obj)[,first_annotation])
@@ -1716,20 +1717,20 @@ Cluster_genelist_output <-function(object=rld_df, dds_obj=dds, anno_color,
                                    display_row=F){
   
   if(is.null(second_annotation)==F){
-  df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
-  colnames(df_) <- c(first_annotation,second_annotation)
-  row.names(df_) <- colnames(object)
-  
-  map <- pheatmap(object[gene_list,],
-                  cluster_rows=TRUE, cluster_cols=T,
-                  clustering_distance_rows="correlation",
-                  clustering_distance_cols="correlation",
-                  show_rownames=display_row, show_colnames = TRUE,
-                  scale = "row",
-                  main = heatmap_title,
-                  annotation_col=df_,
-                  annotation_colors =anno_color ) 
-  Clustering_output <<- object[map$tree_row$order,]
+    df_ <- as.data.frame(colData(dds_obj)[,c(first_annotation,second_annotation)])
+    colnames(df_) <- c(first_annotation,second_annotation)
+    row.names(df_) <- colnames(object)
+    
+    map <- pheatmap(object[gene_list,],
+                    cluster_rows=TRUE, cluster_cols=T,
+                    clustering_distance_rows="correlation",
+                    clustering_distance_cols="correlation",
+                    show_rownames=display_row, show_colnames = TRUE,
+                    scale = "row",
+                    main = heatmap_title,
+                    annotation_col=df_,
+                    annotation_colors =anno_color ) 
+    Clustering_output <<- object[map$tree_row$order,]
   }
   else{
     df_ <- as.data.frame(colData(dds_obj)[,first_annotation])
@@ -2015,49 +2016,49 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
   geneCounts_lfc$condition <- annotation[[paste0(condition)]]
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
   if(is.null(anno_colour)==F){
-  if (is.null(shape_opt)==T){
-    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-      scale_color_manual(values=anno_colour)+
-      geom_beeswarm(cex = 3, na.rm=T)+
-      ylab("Normalized counts")+
-      labs(title=paste0(gene_symbol),colour=condition)+
-      theme_bw()+
-      theme(plot.title = element_text(hjust=0.5))}
-  else{
-    geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-    legend_shape<-paste0(shape_opt)
-    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-      scale_color_manual(values=anno_colour)+
-      scale_shape(name=legend_shape)+
-      geom_beeswarm(cex = 3, na.rm=T)+
-      ylab("Normalized counts")+
-      labs(title=paste0(gene_symbol),colour=condition)+
-      theme_bw()+
-      theme(plot.title = element_text(hjust=0.5))}}
+    if (is.null(shape_opt)==T){
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_manual(values=anno_colour)+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Normalized counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))}
     else{
-      if (is.null(shape_opt)==T){
-        ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-          scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-          scale_color_brewer(palette = "Spectral")+
-          geom_beeswarm(cex = 3, na.rm=T)+
-          ylab("Normalized counts")+
-          labs(title=paste0(gene_symbol),colour=condition)+
-          theme_bw()+
-          theme(plot.title = element_text(hjust=0.5))}
-      else{
-        geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-        legend_shape<-paste0(shape_opt)
-        ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-          scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-          scale_color_brewer(palette = "Spectral")+
-          scale_shape(name=legend_shape)+
-          geom_beeswarm(cex = 3, na.rm=T)+
-          ylab("Normalized counts")+
-          labs(title=paste0(gene_symbol),colour=condition)+
-          theme_bw()+
-          theme(plot.title = element_text(hjust=0.5))
+      geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+      legend_shape<-paste0(shape_opt)
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_manual(values=anno_colour)+
+        scale_shape(name=legend_shape)+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Normalized counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))}}
+  else{
+    if (is.null(shape_opt)==T){
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_brewer(palette = "Spectral")+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Normalized counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))}
+    else{
+      geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+      legend_shape<-paste0(shape_opt)
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_brewer(palette = "Spectral")+
+        scale_shape(name=legend_shape)+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Normalized counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))
     }
   }
 }
@@ -2071,49 +2072,49 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
   colnames(geneCounts_lfc)<-c("count","condition")
   if(is.null(anno_colour)==F){
-  if (is.null(shape_opt)==T){
-    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-      scale_color_manual(values=anno_colour)+
-      geom_beeswarm(cex = 3, na.rm=T)+
-      ylab("Batch-correct rlog transformed counts")+
-      labs(title=paste0(gene_symbol),colour=condition)+
-      theme_bw()+
-      theme(plot.title = element_text(hjust=0.5))}
-  else{
-    geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-    legend_shape<-paste0(shape_opt)
-    ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-      scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-      scale_color_manual(values=anno_colour)+
-      scale_shape(name=legend_shape)+
-      geom_beeswarm(cex = 3, na.rm=T)+
-      ylab("Batch-correct rlog transformed counts")+
-      labs(title=paste0(gene_symbol),colour=condition)+
-      theme_bw()+
-      theme(plot.title = element_text(hjust=0.5))}}
+    if (is.null(shape_opt)==T){
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_manual(values=anno_colour)+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Batch-correct rlog transformed counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))}
     else{
-      if (is.null(shape_opt)==T){
-        ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-          scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-          scale_color_brewer(palette = "Spectral")+
-          geom_beeswarm(cex = 3, na.rm=T)+
-          ylab("Batch-correct rlog transformed counts")+
-          labs(title=paste0(gene_symbol),colour=condition)+
-          theme_bw()+
-          theme(plot.title = element_text(hjust=0.5))}
-      else{
-        geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-        legend_shape<-paste0(shape_opt)
-        ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-          scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
-          scale_color_brewer(palette = "Spectral")+
-          scale_shape(name=legend_shape)+
-          geom_beeswarm(cex = 3, na.rm=T)+
-          ylab("Batch-correct rlog transformed counts")+
-          labs(title=paste0(gene_symbol),colour=condition)+
-          theme_bw()+
-          theme(plot.title = element_text(hjust=0.5))
+      geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+      legend_shape<-paste0(shape_opt)
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_manual(values=anno_colour)+
+        scale_shape(name=legend_shape)+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Batch-correct rlog transformed counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))}}
+  else{
+    if (is.null(shape_opt)==T){
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_brewer(palette = "Spectral")+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Batch-correct rlog transformed counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))}
+    else{
+      geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
+      legend_shape<-paste0(shape_opt)
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        scale_color_brewer(palette = "Spectral")+
+        scale_shape(name=legend_shape)+
+        geom_beeswarm(cex = 3, na.rm=T)+
+        ylab("Batch-correct rlog transformed counts")+
+        labs(title=paste0(gene_symbol),colour=condition)+
+        theme_bw()+
+        theme(plot.title = element_text(hjust=0.5))
     }
   }
 }
