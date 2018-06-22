@@ -178,7 +178,7 @@ pca_raw <- PCA_rawdata(object=rld,
                        color_obj="merged",
                        anno_colour=anno_merged,
                        count_mat=count_matrix,
-                       shape_opt="type",
+                       shape_opt="NULL",
                        continuous=F,
                        colour_gradient=c("red","white","blue"),
                        point_size=3)
@@ -192,7 +192,7 @@ pca <- PCA_DEseq2(object=rld,
                   ntop=500, PC_1=1, PC_2=2,
                   color_obj="merged",
                   anno_colour=anno_merged,
-                  shape_opt = "status",
+                  shape_opt = "NULL",
                   continuous=F,
                   colour_gradient=c("red","yellow","blue"),
                   point_size=3)
@@ -326,7 +326,7 @@ DE_object <- Dea_analysis(annotation_file=annotation,
                           count_matrix_file=count_matrix,
                           IHW_option=F,
                           alpha_option=0.05, 
-                          lfc_Threshold=0, 
+                          lfc_Threshold=0.58, 
                           control=list("CON_GM"), 
                           condition="merged",
                           design_variable=design)
@@ -479,19 +479,19 @@ multiplot(plotlist = list_volcano,cols = 3)
 
 # Define and plot top genes for all conditions
 # condi=the comparison against your control that you arre interested in
-Top_10_CON_WM_up <- DE_genes_Top_up(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="CON_WM")
+Top_10_CON_WM_up <- DE_genes_Top_up(ntop=5, input_file=DE_object$CON_GM,condi="CON_WM")
 Top_10_CON_WM_up
 
-Top_10_CON_WM_down <- DE_genes_Top_down(ntop=10, input_file=DE_object$CON_GM,condition="CON_GM", condi="NULL")
+Top_10_CON_WM_down <- DE_genes_Top_down(ntop=5, input_file=DE_object$CON_GM,condi="CON_WM")
 
 Top<-DE_genes_Top(ntop=50, condi="NULL", input_file=DE_object$CON_GM, condition=annotation$condition)
-Top_10_CON_WM <- union(Top_10_CON_WM_up,Top_10_CON_WM_down)
 
-Top_all <- DE_genes_Top(ntop=50, condi="NULL", input_file=DE_object$CON_GM, condition=annotation$condition)
+
+Top_all <- union(Top_10_CON_WM_up,Top_10_CON_WM_down)
 # This plot will display the Volcano plot with a certain gene highlighted,
 # condition equals the title of the plot
 Volcano_plot_display_gene(input_file=DE_object$CON_GM, condition="CON_WM", 
-                          gene=Top_10_CON_WM_up,size=5, 
+                          gene=Top_all,size=5, 
                           x_limit=c(-10,10), y_limit = c(NA,NA))
 Volcano_plot_display_gene(input_file=DE_object, condition="AB_H1N1", 
                           gene=Top_10_H1N1,size=2, 
@@ -1403,7 +1403,7 @@ functional_prediction <- function(input_file= dds,
           
           
           
-       
+          
           
           
           xlsx.addPlot(wb, sheet, plotFunction())
@@ -1480,4 +1480,12 @@ functional_prediction <- function(input_file= dds,
   
 }
 
+#Comparing created DE gene list with DE gene list from results table
+intersect(DE_object$CON_GM@DE_genes$CON_WM$`up-regulated genes`,DE_object$CON_GM@DE_genes$CON_WM$`down-regulated genes`)
+DE_genes_plot(DE_object$CON_GM@Number_DE_genes, DE_obj=DE_object$CON_GM)
+length(DE_object$CON_GM@DE_genes$CON_WM$`up-regulated genes`)
 
+nrow(DE_object$CON_GM@results$CON_WM[DE_object$CON_GM@results$CON_WM$log2FoldChange>0.58&DE_object$CON_GM@results$CON_WM$padj<0.05,])
+rownames(DE_object$CON_GM@results$CON_WM[DE_object$CON_GM@results$CON_WM$log2FoldChange>0.58&DE_object$CON_GM@results$CON_WM$padj<0.05,])
+intersect(rownames(DE_object$CON_GM@results$CON_WM[DE_object$CON_GM@results$CON_WM$log2FoldChange>0.58&DE_object$CON_GM@results$CON_WM$padj<0.05,])
+,DE_object$CON_GM@DE_genes$CON_WM$`up-regulated genes`)
