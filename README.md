@@ -2,6 +2,11 @@
 
 This pipeline includes the General workflow to find differentially expressed genes with DESeq starting from Kallisto files or Gene count tables including helpful plots.
 
+# 22.06.2018_
+1) Changed Volcano plot because it was displaying the wrong genes in red!
+2) Changed the PCA of the normalized counts so you can now also plot it without a shape_option
+3) Changed the Top_10_genes function as it calculated the wrong genes! (did not take fold-change threshold into account)
+
 # 19.06.2018:
 Changed the n.sv command
 
