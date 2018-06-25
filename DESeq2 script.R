@@ -335,6 +335,18 @@ DE_object <- Dea_analysis(annotation_file=annotation,
 ##### Create an Excel file with the different DEgenes between conditions ######
 ##############################################################################
 
+# Add the means of the conditions into the results table; watch out as the Fold change is adjusted (shrinken afterwards)
+# so the Fold-change indicated is not equal the fold-change calculated by comparing the mean expression of the normalized counts
+i_list<-names(DE_object)
+j_list<-names(DE_object$monocyte_ctrl@results)
+for(i in i_list){
+  for(j in 1:3){
+    DE_object[[i]]@results[[j]]$mean_1 <- rowMeans(normalized_counts[,rownames(annotation[annotation$conditions %in% paste(i),])])
+    DE_object[[i]]@results[[j]]$mean_2 <- rowMeans(normalized_counts[,rownames(annotation[annotation$conditions %in% names(DE_object[[i]]@results)[j],])])
+    names(DE_object[[i]]@results[[j]]) <- c(names(DE_object[[i]]@results[[j]])[1:7], paste(i), names(DE_object[[i]]@results)[j])
+  }
+}
+
 # creates an Excel sheet with the different DEgenes
 # Comparisons against suspension_wt
 for (i in 1:length(DE_object$suspension_wt@results)) {
