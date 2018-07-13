@@ -1,7 +1,7 @@
 list.of.packages <- c("tidyverse", "reshape2","dplyr","stringr","pheatmap","colourlovers",'VennDiagram',
                       "ggbeeswarm","scales","magrittr", "tidyr","bit", "data.table","RSQLite","Rcpp", "rJava",
                       "devtools", "matrixStats", "xlsx", "gridBase", "survival", "rlang", "MASS", "ggforce", "tibble",
-                      "stringi")
+                      "stringi","gtools")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0) install.packages(new.packages)
 library(r2excel)
@@ -36,7 +36,7 @@ filter_counts <- function(count_mat=count_matrix,
                                      multiVals="first")
     
     count_matrix <- as.data.frame(count_matrix[!is.na(rownames(count_matrix)),])
-    count_matrix<-aggregate(.~rownames(count_matrix), data=count_matrix, sum)
+    count_matrix<-aggregate(.~rownames(count_matrix), data=count_matrix, FUN=sum)
     rownames(count_matrix) <- count_matrix[,1]
     count_matrix[,1]<-NULL
     count_matrix[1:ncol(count_matrix)]<- lapply(count_matrix, as.integer)
@@ -49,7 +49,7 @@ filter_counts <- function(count_mat=count_matrix,
 }
 
 Var_stab<- function(deseq_count_matrix=dsfm, blind_param=T, count_mat=count_matrix){
-  if(ncol(count_mat)<40){
+  if(ncol(count_mat)<30){
     rld<-rlog(deseq_count_matrix, blind=blind_param)
   }
   else{
@@ -378,7 +378,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -402,7 +405,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -425,7 +431,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -448,7 +457,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -472,7 +484,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -495,7 +510,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -519,7 +537,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
         coord_fixed()+
         labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank(),
               aspect.ratio = 1,
               plot.background = element_blank(),
               legend.background = element_blank(),
@@ -543,7 +564,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -566,7 +590,10 @@ PCA_rawdata <-function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -642,7 +669,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -666,7 +696,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -689,7 +722,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -711,7 +747,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -735,7 +774,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -758,7 +800,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
             ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
             coord_fixed()+
             labs(title="PCA")+
-            theme(panel.background = element_rect(fill=NA, color = "black"),
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
                   aspect.ratio = 1,
                   plot.background = element_blank(),
                   legend.background = element_blank(),
@@ -782,7 +827,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
         ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
         coord_fixed()+
         labs(title="PCA")+
-        theme(panel.background = element_rect(fill=NA, color = "black"),
+        theme(panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank(),
               aspect.ratio = 1,
               plot.background = element_blank(),
               legend.background = element_blank(),
@@ -806,7 +854,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -829,7 +880,10 @@ PCA_DEseq2 <- function(object=rld, color_obj="condition",
           ylab(paste0("PC ",PC_2,": ", percentVar[2], "% variance")) +
           coord_fixed()+
           labs(title="PCA")+
-          theme(panel.background = element_rect(fill=NA, color = "black"),
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
                 aspect.ratio = 1,
                 plot.background = element_blank(),
                 legend.background = element_blank(),
@@ -1378,7 +1432,8 @@ Dea_analysis <- function(annotation_file=annotation,
                          lfc_Threshold=0, 
                          control=list("CON_GM","CON_WM"), 
                          condition="merged",
-                         design_variable=design){
+                         design_variable=design,
+                         fdr_correction="BH"){
   DE_objects <- list()
   
   for(j in control){
@@ -1403,6 +1458,8 @@ Dea_analysis <- function(annotation_file=annotation,
     # Run DESeq function
     dds <- DESeq(dsfm)
     
+    dds <- dds[which(mcols(dds)$betaConv),]
+    
     DE_object@parameters <- list(dds,IHW_option, alpha_option, lfc_Threshold, j, condition)
     
     #Define the levels that should be compared against the control
@@ -1421,18 +1478,20 @@ Dea_analysis <- function(annotation_file=annotation,
         res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
                                    res=res_deseq_lfc)
         res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-        res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
+        res_deseq_lfc$FC <- logratio2foldchange(res_deseq_lfc$log2FoldChange,base=2)
         list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
       }
       if (IHW_option==F) {
         res_deseq_lfc <- results(dds,contrast = c(condition, i, j),
                                  lfcThreshold = lfc_Threshold,
                                  alpha = alpha_option,
-                                 altHypothesis = "greaterAbs")
+                                 independentFiltering = T,
+                                 altHypothesis = "greaterAbs",
+                                 pAdjustMethod=fdr_correction)
         res_deseq_lfc <- lfcShrink(dds, contrast = c(condition, i, j),
                                    res=res_deseq_lfc)
         res_deseq_lfc <- as.data.frame(res_deseq_lfc)
-        res_deseq_lfc$FC <- 2^(res_deseq_lfc$log2FoldChange)
+        res_deseq_lfc$FC <- logratio2foldchange(res_deseq_lfc$log2FoldChange,base=2)
         list_conditions[[paste(i)]] <- assign(  paste(i), res_deseq_lfc )
       } 
       DE_object@results <- list_conditions
@@ -1589,8 +1648,11 @@ DE_genes_plot <- function(DE_genes_df = DE_object@Number_DE_genes, DE_obj=DE_obj
                         aes(Var1, value)) + 
     geom_bar(stat = "identity", aes(fill = regulation)) +
     theme_bw() + facet_grid(.~condition)+
-    theme(axis.title.x=element_blank(), 
-          axis.text.x = element_blank())+
+    theme(axis.title.x=element_blank(),
+          axis.text.x = element_blank(),
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank())+
     scale_fill_manual(values = c("#B1BBCF", "#FC9D9A"))+
     guides(fill = guide_legend(title = "DE genes"))
   
@@ -1655,13 +1717,13 @@ Volcano_plot_display_gene <- function(input_file=DE_object, condition="CpG",
 removeBatchEffect_function <- function(x=rld_df,
                                        batch = annotation$`Customer ID`,
                                        model = model.matrix(~annotation$merged)){
-  if(is.numeric(batch)==T){
-    removeBatchEffect(x=as.matrix(rld_df),
-                      covariates = annotation$`Customer ID`,
+  if(is.numeric(batch[,1])==T){
+    removeBatchEffect(x=as.matrix(x),
+                      covariates = batch,
                       design = model)}
   else{
-    removeBatchEffect(x=rld_df,
-                      batch = annotation$`Customer ID`,
+    removeBatchEffect(x=x,
+                      batch = batch,
                       design = model)
   }
 }
@@ -2016,47 +2078,66 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
   if(is.null(anno_colour)==F){
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        expand_limits(y = 0) +  
         scale_color_manual(values=anno_colour)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Normalized counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))}
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        expand_limits(y = 0) +  
         scale_color_manual(values=anno_colour)+
         scale_shape(name=legend_shape)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Normalized counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))}}
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)}}
   else{
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        expand_limits(y = 0) +  
         scale_color_brewer(palette = "Spectral")+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Normalized counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))}
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        expand_limits(y = 0) +  
         scale_color_brewer(palette = "Spectral")+
         scale_shape(name=legend_shape)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Normalized counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+geom_boxplot(width=.5)
     }
   }
 }
@@ -2065,54 +2146,74 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
                                        order=c("GM","WM"),
                                        shape_opt="status") {
   
-  geneCounts_lfc <- as.data.frame(batch_corrected_rld[gene_symbol,])
+  geneCounts_lfc <- as.data.frame(batch_rld[gene_symbol,])
   geneCounts_lfc$condition <- annotation[[paste0(condition)]]
   geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
   colnames(geneCounts_lfc)<-c("count","condition")
   if(is.null(anno_colour)==F){
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        expand_limits(y = 0) + 
         scale_color_manual(values=anno_colour)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))}
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +  
+        expand_limits(y = 0) + 
         scale_color_manual(values=anno_colour)+
         scale_shape(name=legend_shape)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))}}
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)}}
   else{
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+        expand_limits(y = 0) + 
         scale_color_brewer(palette = "Spectral")+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))}
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-        scale_y_discrete(limits = c(0,max(geneCounts_lfc$count))) +  
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) + 
+        expand_limits(y = 0) + 
         scale_color_brewer(palette = "Spectral")+
         scale_shape(name=legend_shape)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5))
+        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank())+
+        geom_boxplot(width=.5)
     }
   }
 }
@@ -2181,6 +2282,8 @@ DE_genes_Top_down <- function(ntop=500, condi="NULL",input_file=DE_object$CON_GM
     list_top_DE<-do.call(c, list_top_DE)
     list_top_DE <- unique(list_top_DE)
   }
+  
+  
   else {
     df<-input_file@results[[condi]][input_file@results[[condi]]$log2FoldChange<(-input_file@parameters[[4]]),]
     select <- order(df$padj ,decreasing = F, na.last=T )[seq_len(min(ntop, length(df$padj)))]
@@ -2188,4 +2291,3 @@ DE_genes_Top_down <- function(ntop=500, condi="NULL",input_file=DE_object$CON_GM
     Top500_DE_genes <- rownames(df[select,])
   }
 }
-
