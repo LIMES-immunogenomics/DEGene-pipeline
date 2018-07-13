@@ -650,7 +650,7 @@ rld_df<-as.data.frame(assay(rld))
 # create a data frame with the batch-corrected values of the expression
 # You can either add a column of known batch effect (factors) or 
 # the surrogate variables as numeric values as batch
-batch_corrected_rld <- removeBatchEffect_function(x=rld_df,batch = annotation[c("SV1","SV2","SV3")],model = model.matrix(~annotation$merged))
+batch_corrected_rld <- removeBatchEffect_function(x=rld_df,batch = annotation[c("SV1","SV2","SV3","SV4")],model = model.matrix(~annotation$condition))
 
 
 
