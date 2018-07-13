@@ -2089,7 +2089,7 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)}
+        geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
@@ -2106,7 +2106,7 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)}}
+        geom_boxplot(width=.5,alpha=0)}}
   else{
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
@@ -2121,7 +2121,7 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)}
+        geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
@@ -2137,7 +2137,8 @@ plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf",
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
-              panel.background = element_blank())+geom_boxplot(width=.5)
+              panel.background = element_blank())+
+        geom_boxplot(width=.5,alpha=0)
     }
   }
 }
@@ -2164,7 +2165,7 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)}
+        geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
@@ -2181,7 +2182,7 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)}}
+        geom_boxplot(width=.5,alpha=0)}}
   else{
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
@@ -2196,7 +2197,7 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)}
+        geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
@@ -2213,7 +2214,7 @@ plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbo
               panel.grid.minor = element_blank(),
               panel.border = element_blank(),
               panel.background = element_blank())+
-        geom_boxplot(width=.5)
+        geom_boxplot(width=.5,alpha=0)
     }
   }
 }
