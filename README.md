@@ -6,6 +6,7 @@ This pipeline includes the General workflow to find differentially expressed gen
 1) DEA_analysis: added Fold-change as column in results of DE_object
 2) fixed batch_corrected_table when using SVA
 3) Added boxplots to single gene plotting 
+4) PCA looks prettier now :D
 
 # 22.06.2018_
 1) Changed Volcano plot because it was displaying the wrong genes in red!
