@@ -736,18 +736,18 @@ KEGG_LPS <- plot_KEGG(upreg_genes_list=AB_H1N1_up,
 
 ##### Plot single genes ####
 
-#plots a single gene indicating the normalized counts for all conditions
-# This duntion will plot the normalized count
 # you can set anno_colour to NULL to make it chose the colours itself with color_brewer
+# transform log2 values of the batch_corrected counts table to non-log transformed counts
+dds_batch_corrected <-as.data.frame(batch_corrected_rld)
+dds_batch_corrected[1:ncol(dds_batch_corrected)]<- lapply(dds_batch_corrected,logratio2foldchange)
 
-plot_single_gene(dds_object=DE_object$CON_GM@parameters[[1]], gene_symbol="IL6", 
-                 condition="merged", pc_cond=F, anno_colour=NULL, 
-                 order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt=NULL)
+# input: add normalized_counts to plot the normalized counts, 
+# dds_batch_corrected to plot the batch corrected counts or 
+# batch_corrected_rld to plot the batch corrected log2 transformed data 
+plot_single_gene(input=batch_corrected_rld, gene_symbol="TNF", 
+                 condition="merged", anno_colour=NULL,
+                 shape_opt="status")
 
-# This function plots the batch-corrected counts
-plot_batch_corrected_counts(batch_rld=batch_corrected_rld, gene_symbol="IL6", 
-                            condition="merged", anno_colour=NULL,
-                            order=c("CON_GM", "CON_WM", "MS_GM",  "MS_WM"),shape_opt="type")
 
 
 ##### Creating tables of GO terms #####
