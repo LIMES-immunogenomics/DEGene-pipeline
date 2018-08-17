@@ -2062,158 +2062,64 @@ plot_KEGG <- function(upreg_genes_list, downreg_genes_list,
   # use the multiplot function to plot gigi_upreg and gigi_downreg together
   multiplot(gigi_down, gigi_up, cols = 2)
 }
-plot_single_gene <- function(dds_object=dds, gene_symbol="Tnf", 
-                             condition="condition", pc_cond=F, anno_colour=anno,
-                             order=c("suspension_wt",
-                                     "suspension_Cyth2_KO",
-                                     "fibronectin_Cyth2_KO",
-                                     "fibronectin_wt",
-                                     "gelatin_wt",
-                                     "gelatin_Cyth2_KO"),shape_opt="Treatment") {
-  geneCounts_lfc <- plotCounts(dds_object, gene = gene_symbol, 
-                               intgroup = condition, pc=pc_cond,
-                               returnData = TRUE)
-  geneCounts_lfc$condition <- annotation[[paste0(condition)]]
-  geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
-  if(is.null(anno_colour)==F){
-    if (is.null(shape_opt)==T){
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        expand_limits(y = 0) +  
-        scale_color_manual(values=anno_colour)+
-        geom_beeswarm(cex = 3, na.rm=T)+
-        ylab("Normalized counts")+
-        labs(title=paste0(gene_symbol),colour=condition)+
-        theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
-        geom_boxplot(width=.5,alpha=0)}
-    else{
-      geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-      legend_shape<-paste0(shape_opt)
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-        expand_limits(y = 0) +  
-        scale_color_manual(values=anno_colour)+
-        scale_shape(name=legend_shape)+
-        geom_beeswarm(cex = 3, na.rm=T)+
-        ylab("Normalized counts")+
-        labs(title=paste0(gene_symbol),colour=condition)+
-        theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
-        geom_boxplot(width=.5,alpha=0)}}
-  else{
-    if (is.null(shape_opt)==T){
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        expand_limits(y = 0) +  
-        scale_color_brewer(palette = "Spectral")+
-        geom_beeswarm(cex = 3, na.rm=T)+
-        ylab("Normalized counts")+
-        labs(title=paste0(gene_symbol),colour=condition)+
-        theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
-        geom_boxplot(width=.5,alpha=0)}
-    else{
-      geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
-      legend_shape<-paste0(shape_opt)
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
-        expand_limits(y = 0) +  
-        scale_color_brewer(palette = "Spectral")+
-        scale_shape(name=legend_shape)+
-        geom_beeswarm(cex = 3, na.rm=T)+
-        ylab("Normalized counts")+
-        labs(title=paste0(gene_symbol),colour=condition)+
-        theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
-        geom_boxplot(width=.5,alpha=0)
-    }
-  }
-}
-plot_batch_corrected_counts <-function(batch_rld=batch_corrected_rld, gene_symbol="TNF", 
-                                       condition="type", anno_colour=anno_batch,
-                                       order=c("GM","WM"),
-                                       shape_opt="status") {
-  
-  geneCounts_lfc <- as.data.frame(batch_rld[gene_symbol,])
-  geneCounts_lfc$condition <- annotation[[paste0(condition)]]
-  geneCounts_lfc$condition <- factor(geneCounts_lfc$condition, levels =order )
+plot_single_gene <-function(input=norm_anno, gene_symbol="TNF", 
+                            condition="Genotype_Age", anno_colour=Genotype_Age_col,
+                            shape_opt="age") {
+  input<-as.data.frame(input)
+  geneCounts_lfc <- as.data.frame(t(input[rownames(input)=="TNF",]))
+  geneCounts_lfc$condition <- annotation[[condition]]
   colnames(geneCounts_lfc)<-c("count","condition")
   if(is.null(anno_colour)==F){
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        expand_limits(y = 0) + 
+        scale_y_continuous(expand=c(0.05,0.25)) +  
         scale_color_manual(values=anno_colour)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
+        theme(plot.title = element_text(hjust=0.5))+
+        expand_limits(y=0)+
         geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +  
-        expand_limits(y = 0) + 
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+        scale_y_continuous(expand=c(0.05,0.25)) +   
         scale_color_manual(values=anno_colour)+
         scale_shape(name=legend_shape)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
+        theme(plot.title = element_text(hjust=0.5))+
+        expand_limits(y=0)+
         geom_boxplot(width=.5,alpha=0)}}
   else{
     if (is.null(shape_opt)==T){
       ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition)) +
-        expand_limits(y = 0) + 
+        scale_y_continuous(expand=c(0.05,0.25)) +  
         scale_color_brewer(palette = "Spectral")+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
+        theme(plot.title = element_text(hjust=0.5))+
+        expand_limits(y=0)+
         geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
       legend_shape<-paste0(shape_opt)
-      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) + 
-        expand_limits(y = 0) + 
+      ggplot(geneCounts_lfc, aes(x = condition, y = count, colour=condition, shape=sign)) +
+        scale_y_continuous(expand=c(0.05,0.25)) +  
         scale_color_brewer(palette = "Spectral")+
         scale_shape(name=legend_shape)+
         geom_beeswarm(cex = 3, na.rm=T)+
         ylab("Batch-correct rlog transformed counts")+
         labs(title=paste0(gene_symbol),colour=condition)+
         theme_bw()+
-        theme(plot.title = element_text(hjust=0.5),axis.line = element_line(colour = "black"),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              panel.background = element_blank())+
+        theme(plot.title = element_text(hjust=0.5))+
+        expand_limits(y=0)+
         geom_boxplot(width=.5,alpha=0)
     }
   }
