@@ -2066,7 +2066,7 @@ plot_single_gene <-function(input=norm_anno, gene_symbol="TNF",
                             condition="Genotype_Age", anno_colour=Genotype_Age_col,
                             shape_opt="age") {
   input<-as.data.frame(input)
-  geneCounts_lfc <- as.data.frame(t(input[rownames(input)==gene_symbol,]))
+  geneCounts_lfc <- as.data.frame(t(input[rownames(input)=="TNF",]))
   geneCounts_lfc$condition <- annotation[[condition]]
   colnames(geneCounts_lfc)<-c("count","condition")
   if(is.null(anno_colour)==F){
@@ -2080,6 +2080,7 @@ plot_single_gene <-function(input=norm_anno, gene_symbol="TNF",
         theme_bw()+
         theme(plot.title = element_text(hjust=0.5))+
         expand_limits(y=0)+
+        stat_boxplot(geom ='errorbar',width=.25)+
         geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
@@ -2094,6 +2095,7 @@ plot_single_gene <-function(input=norm_anno, gene_symbol="TNF",
         theme_bw()+
         theme(plot.title = element_text(hjust=0.5))+
         expand_limits(y=0)+
+        stat_boxplot(geom ='errorbar',width=.25)+
         geom_boxplot(width=.5,alpha=0)}}
   else{
     if (is.null(shape_opt)==T){
@@ -2106,6 +2108,7 @@ plot_single_gene <-function(input=norm_anno, gene_symbol="TNF",
         theme_bw()+
         theme(plot.title = element_text(hjust=0.5))+
         expand_limits(y=0)+
+        stat_boxplot(geom ='errorbar',width=.25)+
         geom_boxplot(width=.5,alpha=0)}
     else{
       geneCounts_lfc$sign <- annotation[[paste0(shape_opt)]]
@@ -2120,6 +2123,7 @@ plot_single_gene <-function(input=norm_anno, gene_symbol="TNF",
         theme_bw()+
         theme(plot.title = element_text(hjust=0.5))+
         expand_limits(y=0)+
+        stat_boxplot(geom ='errorbar',width=.25)+
         geom_boxplot(width=.5,alpha=0)
     }
   }
