@@ -2066,7 +2066,7 @@ plot_single_gene <-function(input=norm_anno, gene_symbol="TNF",
                             condition="Genotype_Age", anno_colour=Genotype_Age_col,
                             shape_opt="age") {
   input<-as.data.frame(input)
-  geneCounts_lfc <- as.data.frame(t(input[rownames(input)=="TNF",]))
+  geneCounts_lfc <- as.data.frame(t(input[rownames(input)==gene_symbol,]))
   geneCounts_lfc$condition <- annotation[[condition]]
   colnames(geneCounts_lfc)<-c("count","condition")
   if(is.null(anno_colour)==F){
